@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Meals | Smart Grocery</title>
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/meals.js" defer></script>
+</head>
+
+<body>
+<header class="topbar">
+    <a class="brand" href="/">
+        Smart Grocery
+    </a>
+
+    <nav>
+        <a href="/">Home</a>
+        <a class="active" href="/meals.html">Meals</a>
+        <a href="/shopping.html">Shopping</a>
+        <a href="/settings.html">Settings</a>
+    </nav>
+</header>
+
+<main class="page">
+    <section class="intro">
+        <p class="eyebrow">Weekly meal plan</p>
+        <h1>Plan your meals</h1>
+        <p>
+            Generate recipe ideas and place them into
+            breakfast, lunch or dinner slots.
+        </p>
+    </section>
+
+    <section class="planner-toolbar">
+        <div>
+            <p class="card-label">Meals planned</p>
+
+            <div class="planner-count">
+                <span id="plannedCount">0</span>
+                <span>/21</span>
+            </div>
+
+            <p id="mealStatus" class="status-text">
+                Generate recipes to start planning.
+            </p>
+        </div>
+
+        <div class="planner-actions">
+            <button
+                    id="generateMealsButton"
+                    class="primary-button"
+                    type="button"
+            >
+                Generate recipes
+            </button>
+
+            <button
+                    id="clearPlanButton"
+                    class="secondary-button"
+                    type="button"
+            >
+                Clear schedule
+            </button>
+        </div>
+    </section>
+
+    <section class="planner-section">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Schedule</p>
+                <h2>This week</h2>
+            </div>
+
+            <p>
+                Moving recipes between slots does not change
+                the shopping list.
+            </p>
+        </div>
+
+        <div id="weekPlanner" class="week-grid"></div>
+    </section>
+
+    <section class="recipe-section">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">Recipe collection</p>
+                <h2>Your generated recipes</h2>
+            </div>
+        </div>
+
+        <div id="recipeLibrary" class="recipe-grid"></div>
+    </section>
+</main>
+</body>
+</html>

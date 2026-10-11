@@ -1,9 +1,8 @@
-package com.example.smartgrocery.controller;
+package com.example.smartdagligvare.Controllers;
 
-import com.example.smartgrocery.model.Product;
-import com.example.smartgrocery.service.ProductService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import com.example.smartdagligvare.Dto.Kassalapp.KassalappProduct;
+import com.example.smartdagligvare.Service.ProductRecommendationService;
+import com.example.smartdagligvare.Service.ProductSearchService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,59 +11,31 @@ import java.util.List;
 @RequestMapping("/api/products")
 public class ProductController {
 
-    private final ProductService productService;
+    private final ProductSearchService productSearchService;
+    private final ProductRecommendationService recommendationService;
 
-    // Spring injects ProductService here
-    public ProductController(ProductService productService) {
-        this.productService = productService;
-    }
-
-    // GET /api/products
-    @GetMapping
-    public List<Product> getAllProducts() {
-        return productService.getAllProducts();
-    }
-
-    // GET /api/products/5
-    @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(
-            @PathVariable Long id
+    public ProductController(
+            ProductSearchService productSearchService, ProductRecommendationService recommendationService
     ) {
-        Product product = productService.getProductById(id);
-        return ResponseEntity.ok(product);
+        this.productSearchService = productSearchService;
+        this.recommendationService = recommendationService;
     }
 
-    // POST /api/products
-    @PostMapping
-    public ResponseEntity<Product> createProduct(
-            @RequestBody Product product
+    @GetMapping("/search")
+    public List<KassalappProduct> searchProducts(
+            @RequestParam String query
     ) {
-        Product createdProduct = productService.createProduct(product);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(createdProduct);
+        return productSearchService.searchProducts(query);
     }
 
-    // PUT /api/products/5
-    @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(
-            @PathVariable Long id,
-            @RequestBody Product product
+    @GetMapping("/recommended")
+    public List<KassalappProduct> recommended(
+            @RequestParam Long userId,
+            @RequestParam String query
     ) {
-        Product updatedProduct =
-                productService.updateProduct(id, product);
-
-        return ResponseEntity.ok(updatedProduct);
-    }
-
-    // DELETE /api/products/5
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(
-            @PathVariable Long id
-    ) {
-        productService.deleteProduct(id);
-
-        return ResponseEntity.noContent().build();
+        return recommendationService.findProductsForUser(
+                userId,
+                query
+        );
     }
 }

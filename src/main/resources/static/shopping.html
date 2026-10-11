@@ -1,0 +1,134 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Shopping | Smart Grocery</title>
+
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/shopping.js" defer></script>
+</head>
+
+<body>
+<header class="topbar">
+    <a class="brand" href="/">Smart Grocery</a>
+
+    <nav>
+        <a href="/">Home</a>
+        <a href="/meals.html">Meals</a>
+        <a class="active" href="/shopping.html">Shopping</a>
+        <a href="/settings.html">Settings</a>
+    </nav>
+</header>
+
+<main class="page">
+    <section class="intro">
+        <p class="eyebrow">Weekly shopping</p>
+        <h1>Your shopping list</h1>
+        <p>
+            Choose products, compare prices and calculate
+            the final weekly total.
+        </p>
+    </section>
+
+    <section id="emptyShoppingList"
+             class="empty-message"
+             hidden>
+        <h2>No shopping list available</h2>
+        <p>
+            Generate recipes before opening the shopping list.
+        </p>
+
+        <a class="primary-link" href="/meals.html">
+            Generate recipes
+        </a>
+    </section>
+
+    <div id="shoppingContent" hidden>
+        <section class="shopping-summary-grid">
+            <article class="small-summary-card">
+                <p>Weekly budget</p>
+                <strong id="shoppingBudget">—</strong>
+            </article>
+
+            <article class="small-summary-card">
+                <p>Selected total</p>
+                <strong id="shoppingTotal">—</strong>
+            </article>
+
+            <article class="small-summary-card">
+                <p>Remaining</p>
+                <strong id="shoppingRemaining">—</strong>
+            </article>
+
+            <article class="small-summary-card">
+                <p>Stores used</p>
+                <strong>
+                    <span id="storesUsedCount">0</span>
+                    /
+                    <span id="maximumStores">—</span>
+                </strong>
+            </article>
+        </section>
+
+        <section class="shopping-toolbar">
+            <p id="shoppingStatus">
+                Choose products and calculate the total.
+            </p>
+
+            <div>
+                <button
+                        id="useRecommendationButton"
+                        class="secondary-button"
+                        type="button"
+                >
+                    Use recommendation
+                </button>
+
+                <button
+                        id="calculateButton"
+                        class="primary-button"
+                        type="button"
+                >
+                    Calculate total
+                </button>
+            </div>
+        </section>
+
+        <section id="missingSection"
+                 class="missing-section"
+                 hidden>
+            <h2>Missing ingredients</h2>
+            <ul id="missingIngredients"></ul>
+        </section>
+
+        <section>
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Products</p>
+                    <h2>Choose one option per ingredient</h2>
+                </div>
+            </div>
+
+            <div id="shoppingItems"
+                 class="shopping-items"></div>
+        </section>
+
+        <section class="store-section">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Store overview</p>
+                    <h2>Products by store</h2>
+                </div>
+            </div>
+
+            <div id="storeBreakdown"
+                 class="store-grid"></div>
+        </section>
+    </div>
+</main>
+</body>
+</html>

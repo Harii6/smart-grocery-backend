@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: smart-grocery-postgres
+
+    environment:
+      POSTGRES_DB: smart_grocery
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - grocery_postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  grocery_postgres_data:

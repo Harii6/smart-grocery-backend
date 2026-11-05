@@ -1,0 +1,147 @@
+.planner-toolbar {
+    padding: 28px;
+    margin-bottom: 48px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.planner-count {
+    font-family: Georgia, serif;
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+.planner-count span:last-child {
+    color: var(--muted);
+    font-size: 1.2rem;
+}
+
+.planner-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.planner-section,
+.recipe-section {
+    margin-top: 48px;
+}
+
+.week-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fit, minmax(240px, 1fr));
+    gap: 18px;
+}
+
+.day-card {
+    padding: 22px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+}
+
+.day-card h3 {
+    margin: 0 0 20px;
+    color: var(--green);
+    font-family: Georgia, serif;
+    font-size: 1.4rem;
+}
+
+.meal-slot {
+    display: block;
+    margin-top: 16px;
+}
+
+.meal-slot span {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.meal-slot select {
+    width: 100%;
+    min-height: 42px;
+    padding: 0 10px;
+    background: white;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.meal-slot select:focus {
+    border-color: var(--green);
+    outline: 2px solid var(--green-light);
+}
+
+.recipe-grid {
+    display: grid;
+    gap: 14px;
+}
+
+.recipe-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.recipe-card summary {
+    padding: 20px;
+    cursor: pointer;
+    list-style: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.recipe-card summary::-webkit-details-marker {
+    display: none;
+}
+
+.recipe-card summary strong {
+    color: var(--green);
+    font-family: Georgia, serif;
+    font-size: 1.15rem;
+}
+
+.recipe-card summary span {
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.recipe-content {
+    padding: 0 24px 24px;
+    border-top: 1px solid var(--border);
+    line-height: 1.6;
+}
+
+.recipe-content h4 {
+    margin: 22px 0 8px;
+}
+
+@media (max-width: 700px) {
+    .planner-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .planner-actions {
+        flex-direction: column;
+    }
+
+    .recipe-card summary {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

@@ -1,0 +1,116 @@
+.dashboard-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.summary-card {
+    min-height: 310px;
+    padding: 30px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow:
+            0 8px 30px rgba(53, 37, 27, 0.04);
+}
+
+.icon-circle {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 24px;
+    border-radius: 50%;
+    background: #eeeae4;
+    color: var(--green);
+
+    display: grid;
+    place-items: center;
+}
+
+.icon-circle svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.card-label {
+    margin: 0 0 6px;
+    color: var(--muted);
+}
+
+.large-value {
+    margin-bottom: 6px;
+    font-family: Georgia, serif;
+    font-size: 3rem;
+    font-weight: bold;
+}
+
+.value-total {
+    color: var(--muted);
+    font-size: 1.35rem;
+}
+
+.card-description,
+.status-text {
+    color: var(--muted);
+    font-size: 0.92rem;
+}
+
+.progress-track {
+    height: 9px;
+    margin-top: 28px;
+    overflow: hidden;
+    background: var(--green-light);
+    border-radius: 100px;
+}
+
+.progress-value {
+    width: 0;
+    height: 100%;
+    background: var(--green);
+    border-radius: inherit;
+    transition: width 300ms ease;
+}
+
+.card-link {
+    display: inline-flex;
+    gap: 8px;
+    margin-top: 26px;
+    color: var(--green);
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.quick-links {
+    display: flex;
+    gap: 14px;
+    margin-top: 28px;
+}
+
+.quick-links a {
+    padding: 13px 18px;
+    background: var(--green);
+    color: white;
+    border-radius: 10px;
+    text-decoration: none;
+}
+
+.quick-links a:last-child {
+    background: transparent;
+    color: var(--green);
+    border: 1px solid var(--green);
+}
+
+@media (max-width: 700px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-links {
+        flex-direction: column;
+    }
+}

@@ -1,22 +1,33 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <link rel="icon" href="data:,">
+
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Shopping | Smart Grocery</title>
 
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/shopping.css">
-    <script type="module" src="/js/shopping.js"></script>
+
+    <script
+            type="module"
+            src="/js/shopping.js"
+    ></script>
 </head>
 
 <body>
+
 <header class="topbar">
-    <a class="brand" href="/">Smart Grocery</a>
+    <a class="brand" href="/">
+        Smart Grocery
+    </a>
 
     <nav>
         <a href="/">Home</a>
@@ -26,62 +37,91 @@
     </nav>
 </header>
 
-<main class="page">
-    <section class="intro">
+<main class="page shopping-page">
+
+    <!-- Heading -->
+    <section class="intro shopping-intro">
         <p class="eyebrow">Weekly shopping</p>
+
         <h1>Your shopping list</h1>
+
         <p>
             Choose products, compare prices and calculate
             the final weekly total.
         </p>
     </section>
 
-    <section id="emptyShoppingList"
-             class="empty-message"
-             hidden>
+    <!-- Empty list -->
+    <section
+            id="emptyShoppingList"
+            class="empty-message"
+            hidden
+    >
         <h2>No shopping list available</h2>
+
         <p>
             Generate recipes before opening the shopping list.
         </p>
 
-        <a class="primary-link" href="/meals.html">
+        <a
+                class="primary-link"
+                href="/meals.html"
+        >
             Generate recipes
         </a>
     </section>
 
+    <!-- Shopping content -->
     <div id="shoppingContent" hidden>
+
+        <!-- Summary -->
         <section class="shopping-summary-grid">
-            <article class="small-summary-card">
+
+            <article class="small-summary-card budget-card">
                 <p>Weekly budget</p>
-                <strong id="shoppingBudget">—</strong>
+
+                <strong id="shoppingBudget">
+                    —
+                </strong>
             </article>
 
-            <article class="small-summary-card">
+            <article class="small-summary-card total-card">
                 <p>Selected total</p>
-                <strong id="shoppingTotal">—</strong>
+
+                <strong id="shoppingTotal">
+                    —
+                </strong>
             </article>
 
-            <article class="small-summary-card">
+            <article class="small-summary-card remaining-card">
                 <p>Remaining</p>
-                <strong id="shoppingRemaining">—</strong>
+
+                <strong id="shoppingRemaining">
+                    —
+                </strong>
             </article>
 
-            <article class="small-summary-card">
+            <article class="small-summary-card stores-card">
                 <p>Stores used</p>
+
                 <strong>
                     <span id="storesUsedCount">0</span>
                     /
                     <span id="maximumStores">—</span>
                 </strong>
             </article>
+
         </section>
 
+        <!-- Actions -->
         <section class="shopping-toolbar">
+
             <p id="shoppingStatus">
                 Choose products and calculate the total.
             </p>
 
-            <div>
+            <div class="shopping-actions">
+
                 <button
                         id="useRecommendationButton"
                         class="secondary-button"
@@ -97,40 +137,68 @@
                 >
                     Calculate total
                 </button>
+
             </div>
+
         </section>
 
-        <section id="missingSection"
-                 class="missing-section"
-                 hidden>
+        <!-- Missing ingredients -->
+        <section
+                id="missingSection"
+                class="missing-section"
+                hidden
+        >
             <h2>Missing ingredients</h2>
+
             <ul id="missingIngredients"></ul>
         </section>
 
-        <section>
+        <!-- Product choices -->
+        <section class="products-section">
+
             <div class="section-heading">
                 <div>
                     <p class="eyebrow">Products</p>
-                    <h2>Choose one option per ingredient</h2>
+
+                    <h2>
+                        Choose one option per ingredient
+                    </h2>
                 </div>
             </div>
 
-            <div id="shoppingItems"
-                 class="shopping-items"></div>
+            <div
+                    id="shoppingItems"
+                    class="shopping-items"
+            ></div>
+
         </section>
 
+        <!-- Store overview -->
         <section class="store-section">
+
             <div class="section-heading">
                 <div>
                     <p class="eyebrow">Store overview</p>
+
                     <h2>Products by store</h2>
                 </div>
             </div>
 
-            <div id="storeBreakdown"
-                 class="store-grid"></div>
+            <p class="store-description">
+                These are the stores used by your currently
+                selected products.
+            </p>
+
+            <div
+                    id="storeBreakdown"
+                    class="store-grid"
+            ></div>
+
         </section>
+
     </div>
+
 </main>
+
 </body>
 </html>

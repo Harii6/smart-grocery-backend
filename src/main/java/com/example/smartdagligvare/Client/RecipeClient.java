@@ -135,7 +135,28 @@ public class RecipeClient {
                 - For fresh vegetables, use specific search terms such as:
                 - "gul løk", "hvitløk", "gulrøtter" and "rød paprika".
                 - Return exactly one valid JSON object.
+                - preparationTimeMinutes must be the estimated total preparation and cooking time as an integer.
+                - caloriesPerServing must be the estimated calories for one serving as an integer.
+                - proteinGramsPerServing must be the estimated grams of protein for one serving as a number.
+                - Calories and protein must be calculated per serving, not for the entire recipe.
+                - Use the ingredient amounts to provide reasonable nutritional estimates.
+                - Do not return carbohydrate or fat information.
                 - Write recipe names and instructions in Norwegian.
+                - Use ingredients commonly available in Norwegian grocery stores.
+                - Prefer ordinary, affordable ingredients available throughout the year.
+                - Avoid niche ingredients that normally require specialist stores.
+                - searchTerm must use a short and generic Norwegian product name.
+                - Prefer one or two words that describe the basic ingredient.
+                - Do not include brands, product ranges or marketing descriptions.
+                - Do not include preparation methods, quality descriptions, packaging types or special product variants.
+                - Remove unnecessary descriptive words when the basic ingredient is enough for a product search.
+                - Choose search terms likely to match several products in an ordinary Norwegian grocery store.
+                - Write all ingredient names in correct Norwegian Bokmål.
+                - Every searchTerm must be a real standalone grocery product.
+                - Do not use Danish or Swedish ingredient names.
+                - Do not invent compound words or ingredient names.
+                - Do not use the name of a prepared dish as an ingredient.
+                - Before returning the JSON, verify that every searchTerm could reasonably appear in a Norwegian grocery-store product search.
                 - Use Norwegian grocery-product names in searchTerm.
                 - Respect all listed food preferences.
                 - Do not include any listed allergens.
@@ -146,33 +167,37 @@ public class RecipeClient {
                 - unit must always be a string.
                 - Do not return Markdown.
                 - Do not surround the response with code fences.
+                
 
-                Return exactly this JSON structure:
-
-                {
-                  "recipes": [
-                    {
-                      "name": "Vegetarisk linsegryte",
-                      "servings": 4,
-                      "ingredients": [
-                        {
-                          "searchTerm": "røde linser",
-                          "amount": 500,
-                          "unit": "g"
-                        },
-                        {
-                          "searchTerm": "hakkede tomater",
-                          "amount": 2,
-                          "unit": "boks"
-                        }
-                      ],
-                      "instructions": [
-                        "Kok linsene etter anvisningen på pakken.",
-                        "Tilsett tomatene og la gryten småkoke."
-                      ]
-                    }
-                  ]
-                }
+                The JSON must have exactly this structure:
+                
+                   {
+                     "recipes": [
+                       {
+                         "name": "Vegetarisk linsegryte",
+                         "servings": 4,
+                         "preparationTimeMinutes": 35,
+                         "caloriesPerServing": 480,
+                         "proteinGramsPerServing": 22.5,
+                         "ingredients": [
+                           {
+                             "searchTerm": "linser",
+                             "amount": 500,
+                             "unit": "g"
+                           },
+                           {
+                             "searchTerm": "tomater",
+                             "amount": 2,
+                             "unit": "boks"
+                           }
+                         ],
+                         "instructions": [
+                           "Kok linsene etter anvisningen på pakken.",
+                           "Tilsett tomatene og la gryten småkoke."
+                         ]
+                       }
+                     ]
+                   }
                 """.formatted(
                 numberOfPeople,
                 preferences,

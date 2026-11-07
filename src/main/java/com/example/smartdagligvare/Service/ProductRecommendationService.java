@@ -83,13 +83,22 @@ public class ProductRecommendationService {
             KassalappProduct product,
             Set<String> userAllergenCodes
     ) {
-        if (product.allergens() == null || product.allergens().isEmpty()) {
+
+        if (userAllergenCodes.isEmpty()) {
+            return true;
+        }
+
+
+        if (product.allergens() == null ||
+                product.allergens().isEmpty()) {
             return false;
         }
 
+        
         return userAllergenCodes.stream()
                 .allMatch(userAllergenCode ->
-                        product.allergens().stream()
+                        product.allergens()
+                                .stream()
                                 .anyMatch(productAllergen ->
                                         userAllergenCode.equalsIgnoreCase(
                                                 productAllergen.code()

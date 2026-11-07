@@ -3,21 +3,23 @@
 <head>
     <link rel="icon" href="data:,">
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Meals | Smart Grocery</title>
 
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/meals.css">
+
     <script src="/js/meals.js" defer></script>
 </head>
 
 <body>
+
 <header class="topbar">
-    <a class="brand" href="/">
-        Smart Grocery
-    </a>
+    <a class="brand" href="/">Smart Grocery</a>
 
     <nav>
         <a href="/">Home</a>
@@ -27,75 +29,212 @@
     </nav>
 </header>
 
-<main class="page">
-    <section class="intro">
-        <p class="eyebrow">Weekly meal plan</p>
-        <h1>Plan your meals</h1>
-        <p>
-            Generate recipe ideas and place them into
-            breakfast, lunch or dinner slots.
-        </p>
-    </section>
+<main class="page meals-page">
 
-    <section class="planner-toolbar">
+    <section class="meals-introduction">
         <div>
-            <p class="card-label">Meals planned</p>
+            <p class="eyebrow">Weekly meal plan</p>
+            <h1>Plan your meals</h1>
 
-            <div class="planner-count">
-                <span id="plannedCount">0</span>
-                <span>/21</span>
-            </div>
-
-            <p id="mealStatus" class="status-text">
-                Generate recipes to start planning.
+            <p class="introduction-text">
+                Choose up to three meals for each day of the week.
             </p>
         </div>
 
-        <div class="planner-actions">
+        <button
+                id="generateMealPlanButton"
+                class="primary-button"
+                type="button"
+        >
+            Generate meal choices
+        </button>
+    </section>
+
+    <p
+            id="mealPlanStatus"
+            class="meal-plan-status"
+            role="status"
+    >
+        Generate meal choices to begin planning your week.
+    </p>
+
+    <section
+            id="mealPlanner"
+            class="meal-planner"
+            hidden
+    >
+
+        <div
+                class="day-navigation"
+                aria-label="Choose day"
+        >
             <button
-                    id="generateMealsButton"
-                    class="primary-button"
+                    class="day-button active"
                     type="button"
+                    data-day="monday"
             >
-                Generate recipes
+                Monday
             </button>
 
             <button
-                    id="clearPlanButton"
+                    class="day-button"
+                    type="button"
+                    data-day="tuesday"
+            >
+                Tuesday
+            </button>
+
+            <button
+                    class="day-button"
+                    type="button"
+                    data-day="wednesday"
+            >
+                Wednesday
+            </button>
+
+            <button
+                    class="day-button"
+                    type="button"
+                    data-day="thursday"
+            >
+                Thursday
+            </button>
+
+            <button
+                    class="day-button"
+                    type="button"
+                    data-day="friday"
+            >
+                Friday
+            </button>
+
+            <button
+                    class="day-button"
+                    type="button"
+                    data-day="saturday"
+            >
+                Saturday
+            </button>
+
+            <button
+                    class="day-button"
+                    type="button"
+                    data-day="sunday"
+            >
+                Sunday
+            </button>
+        </div>
+
+        <section class="meal-choice-panel">
+            <div class="panel-heading">
+                <div>
+                    <p class="eyebrow">Available recipes</p>
+
+                    <h2 id="activeDayTitle">
+                        Choose 3 meals for Monday
+                    </h2>
+                </div>
+
+                <p
+                        id="selectedMealCount"
+                        class="selection-count"
+                >
+                    0 of 3 selected
+                </p>
+            </div>
+
+            <div
+                    id="mealChoices"
+                    class="meal-choice-grid"
+            ></div>
+        </section>
+
+        <section class="selected-meals-section">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Your choices</p>
+
+                    <h2 id="selectedDayTitle">
+                        Monday's meals
+                    </h2>
+                </div>
+            </div>
+
+            <div
+                    id="selectedMeals"
+                    class="selected-meal-grid"
+            ></div>
+        </section>
+
+        <div class="meals-actions">
+            <a
+                    href="/shopping.html"
                     class="secondary-button"
-                    type="button"
             >
-                Clear schedule
-            </button>
-        </div>
-    </section>
-
-    <section class="planner-section">
-        <div class="section-heading">
-            <div>
-                <p class="eyebrow">Schedule</p>
-                <h2>This week</h2>
-            </div>
-
-            <p>
-                Moving recipes between slots does not change
-                the shopping list.
-            </p>
+                View shopping list
+            </a>
         </div>
 
-        <div id="weekPlanner" class="week-grid"></div>
     </section>
 
-    <section class="recipe-section">
-        <div class="section-heading">
-            <div>
-                <p class="eyebrow">Recipe collection</p>
-                <h2>Your generated recipes</h2>
-            </div>
-        </div>
-
-        <div id="recipeLibrary" class="recipe-grid"></div>
-    </section>
 </main>
+
+<dialog id="recipeDialog"
+        class="recipe-dialog"
+        aria-labelledby="recipeDialogTitle">
+
+    <div class="recipe-dialog-content">
+        <button id="recipeDialogClose"
+                class="recipe-dialog-close"
+                type="button"
+                aria-label="Close recipe">
+            &times;
+        </button>
+
+        <header class="recipe-dialog-header">
+            <p class="recipe-dialog-label">Recipe details</p>
+            <h2 id="recipeDialogTitle">Recipe name</h2>
+        </header>
+
+        <section class="recipe-metrics"
+                 aria-label="Recipe information">
+
+            <div class="recipe-metric">
+                <span>Preparation time</span>
+                <strong id="recipeTime">—</strong>
+            </div>
+
+            <div class="recipe-metric">
+                <span>Servings</span>
+                <strong id="recipeServings">—</strong>
+            </div>
+
+            <div class="recipe-metric">
+                <span>Estimated calories per serving</span>
+                <strong id="recipeCalories">—</strong>
+            </div>
+
+            <div class="recipe-metric">
+                <span>Estimated protein per serving</span>
+                <strong id="recipeProtein">—</strong>
+            </div>
+        </section>
+
+        <section class="recipe-detail-section">
+            <h3>Ingredients</h3>
+            <ul id="recipeIngredients"
+                class="recipe-ingredient-list">
+            </ul>
+        </section>
+
+        <section class="recipe-detail-section">
+            <h3>Instructions</h3>
+            <ol id="recipeInstructions"
+                class="recipe-instruction-list">
+            </ol>
+        </section>
+    </div>
+</dialog>
+
 </body>
 </html>

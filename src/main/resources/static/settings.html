@@ -1,21 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <link rel="icon" href="data:,">
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Settings | Smart Grocery</title>
 
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/settings.css">
+
     <script src="/js/settings.js" defer></script>
 </head>
 
 <body>
 
 <header class="topbar">
-    <a class="brand" href="/">Smart Grocery</a>
+    <a class="brand" href="/">
+        Smart Grocery
+    </a>
 
     <nav>
         <a href="/">Home</a>
@@ -27,40 +36,50 @@
 
 <main class="page settings-page">
 
+    <!-- Page heading -->
     <section class="settings-heading">
-        <p class="page-label">Your profile</p>
+        <p class="eyebrow">Your profile</p>
+
         <h1>Grocery settings</h1>
 
-        <p>
-            These settings are used when recipes and shopping lists
-            are created for you.
+        <p class="settings-introduction">
+            Personalize your grocery experience to get better
+            meal plans and shopping lists.
         </p>
 
-        <p id="profile-status" class="profile-status">
+        <p
+                id="profile-status"
+                class="profile-status"
+        >
             No profile has been created yet.
         </p>
     </section>
 
-    <form id="settings-form" class="settings-form">
+    <form
+            id="settings-form"
+            class="settings-form"
+    >
 
+        <!-- Weekly budget -->
         <section class="settings-section">
-            <h2>Household and budget</h2>
 
-            <div class="settings-grid">
+            <div class="settings-section-title">
 
-                <label class="form-field">
-                    <span>Number of people</span>
+                <svg
+                        class="section-icon"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                >
+                    <ellipse cx="12" cy="6" rx="7" ry="3"></ellipse>
+                    <path d="M5 6v4c0 1.7 3.1 3 7 3s7-1.3 7-3V6"></path>
+                    <path d="M5 10v4c0 1.7 3.1 3 7 3s7-1.3 7-3v-4"></path>
+                    <path d="M5 14v4c0 1.7 3.1 3 7 3s7-1.3 7-3v-4"></path>
+                </svg>
 
-                    <input
-                            id="number-of-people"
-                            type="number"
-                            min="1"
-                            max="20"
-                            required
-                            value="1"
-                    >
-                </label>
+                <h2>Weekly budget</h2>
+            </div>
 
+            <div class="settings-card">
                 <label class="form-field">
                     <span>Weekly budget (kr)</span>
 
@@ -73,7 +92,213 @@
                             value="1000"
                     >
                 </label>
+            </div>
 
+        </section>
+
+        <!-- Household -->
+        <section class="settings-section">
+
+            <div class="settings-section-title">
+
+                <svg
+                        class="section-icon"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                >
+                    <circle cx="9" cy="7" r="3"></circle>
+                    <path d="M3 20v-2a6 6 0 0 1 12 0v2"></path>
+                    <circle cx="17" cy="9" r="2.5"></circle>
+                    <path d="M16 14a5 5 0 0 1 5 5v1"></path>
+                </svg>
+
+                <h2>Household members</h2>
+            </div>
+
+            <div class="settings-card">
+                <label class="form-field">
+                    <span>Number of people</span>
+
+                    <input
+                            id="number-of-people"
+                            type="number"
+                            min="1"
+                            max="20"
+                            required
+                            value="1"
+                    >
+                </label>
+            </div>
+
+        </section>
+
+        <!-- Preferences and allergies -->
+        <section class="settings-section">
+
+            <div class="settings-section-title">
+
+                <svg
+                        class="section-icon"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                >
+                    <path d="M20 4C12 4 5 8 5 15c0 3 2 5 5 5 7 0 10-8 10-16Z"></path>
+                    <path d="M4 21c2-6 6-10 12-13"></path>
+                </svg>
+
+                <h2>Food preferences</h2>
+            </div>
+
+            <div class="settings-card food-settings-card">
+
+                <!-- Diet preferences -->
+                <div class="choice-section">
+                    <h3>Diet preferences</h3>
+
+                    <p class="section-description">
+                        Select all preferences that apply.
+                    </p>
+
+                    <div class="choice-grid">
+
+                        <label class="choice-pill">
+                            <input
+                                    type="checkbox"
+                                    name="preferenceCodes"
+                                    value="vegetarian"
+                            >
+                            <span>Vegetarian</span>
+                        </label>
+
+                        <label class="choice-pill">
+                            <input
+                                    type="checkbox"
+                                    name="preferenceCodes"
+                                    value="vegan"
+                            >
+                            <span>Vegan</span>
+                        </label>
+
+                        <label class="choice-pill">
+                            <input
+                                    type="checkbox"
+                                    name="preferenceCodes"
+                                    value="halal"
+                            >
+                            <span>Halal</span>
+                        </label>
+
+                        <label class="choice-pill">
+                            <input
+                                    type="checkbox"
+                                    name="preferenceCodes"
+                                    value="low_sugar"
+                            >
+                            <span>Low sugar</span>
+                        </label>
+
+                    </div>
+                </div>
+
+                <div class="choice-divider"></div>
+
+                <!-- Allergies -->
+                <div class="choice-section allergy-section">
+                    <h3>Allergies</h3>
+
+                    <p class="section-description">
+                        Products containing selected allergens will be excluded.
+                    </p>
+
+                    <div class="choice-grid">
+
+                        <label class="choice-pill allergy-pill">
+                            <input
+                                    type="checkbox"
+                                    name="allergenCodes"
+                                    value="egg"
+                            >
+                            <span>Egg</span>
+                        </label>
+
+                        <label class="choice-pill allergy-pill">
+                            <input
+                                    type="checkbox"
+                                    name="allergenCodes"
+                                    value="fisk"
+                            >
+                            <span>Fish</span>
+                        </label>
+
+                        <label class="choice-pill allergy-pill">
+                            <input
+                                    type="checkbox"
+                                    name="allergenCodes"
+                                    value="gluten"
+                            >
+                            <span>Gluten</span>
+                        </label>
+
+                        <label class="choice-pill allergy-pill">
+                            <input
+                                    type="checkbox"
+                                    name="allergenCodes"
+                                    value="melk"
+                            >
+                            <span>Milk</span>
+                        </label>
+
+                        <label class="choice-pill allergy-pill">
+                            <input
+                                    type="checkbox"
+                                    name="allergenCodes"
+                                    value="notter"
+                            >
+                            <span>Nuts</span>
+                        </label>
+
+                        <label class="choice-pill allergy-pill">
+                            <input
+                                    type="checkbox"
+                                    name="allergenCodes"
+                                    value="peanotter"
+                            >
+                            <span>Peanuts</span>
+                        </label>
+
+                        <label class="choice-pill allergy-pill">
+                            <input
+                                    type="checkbox"
+                                    name="allergenCodes"
+                                    value="soya"
+                            >
+                            <span>Soy</span>
+                        </label>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Store settings -->
+        <section class="settings-section">
+
+            <div class="settings-section-title">
+
+                <svg
+                        class="section-icon"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                >
+                    <path d="M12 22s7-5.5 7-13a7 7 0 1 0-14 0c0 7.5 7 13 7 13Z"></path>
+                    <circle cx="12" cy="9" r="2.5"></circle>
+                </svg>
+
+                <h2>Location &amp; stores</h2>
+            </div>
+
+            <div class="settings-card">
                 <label class="form-field">
                     <span>Maximum number of stores</span>
 
@@ -86,149 +311,36 @@
                             value="2"
                     >
                 </label>
-
             </div>
+
         </section>
 
-        <section class="settings-section">
-            <h2>Food preferences</h2>
+        <!-- Status message -->
+        <div
+                id="settings-message"
+                class="settings-message"
+                role="status"
+                hidden
+        ></div>
 
-            <p class="section-description">
-                Select all preferences that apply.
-            </p>
-
-            <div class="choice-grid">
-
-                <label class="choice-card">
-                    <input
-                            type="checkbox"
-                            name="preferenceCodes"
-                            value="vegetarian"
-                    >
-                    <span>Vegetarian</span>
-                </label>
-
-                <label class="choice-card">
-                    <input
-                            type="checkbox"
-                            name="preferenceCodes"
-                            value="vegan"
-                    >
-                    <span>Vegan</span>
-                </label>
-
-                <label class="choice-card">
-                    <input
-                            type="checkbox"
-                            name="preferenceCodes"
-                            value="halal"
-                    >
-                    <span>Halal</span>
-                </label>
-
-                <label class="choice-card">
-                    <input
-                            type="checkbox"
-                            name="preferenceCodes"
-                            value="low_sugar"
-                    >
-                    <span>Low sugar</span>
-                </label>
-
-            </div>
-        </section>
-
-        <section class="settings-section">
-            <h2>Allergies</h2>
-
-            <p class="section-description">
-                Products containing the selected allergens will be excluded.
-            </p>
-
-            <div class="choice-grid">
-
-                <label class="choice-card">
-                    <input
-                            type="checkbox"
-                            name="allergenCodes"
-                            value="egg"
-                    >
-                    <span>Egg</span>
-                </label>
-
-                <label class="choice-card">
-                    <input
-                            type="checkbox"
-                            name="allergenCodes"
-                            value="fisk"
-                    >
-                    <span>Fish</span>
-                </label>
-
-                <label class="choice-card">
-                    <input
-                            type="checkbox"
-                            name="allergenCodes"
-                            value="gluten"
-                    >
-                    <span>Gluten</span>
-                </label>
-
-                <label class="choice-card">
-                    <input
-                            type="checkbox"
-                            name="allergenCodes"
-                            value="melk"
-                    >
-                    <span>Milk</span>
-                </label>
-
-                <label class="choice-card">
-                    <input
-                            type="checkbox"
-                            name="allergenCodes"
-                            value="notter"
-                    >
-                    <span>Nuts</span>
-                </label>
-
-                <label class="choice-card">
-                    <input
-                            type="checkbox"
-                            name="allergenCodes"
-                            value="peanotter"
-                    >
-                    <span>Peanuts</span>
-                </label>
-
-                <label class="choice-card">
-                    <input
-                            type="checkbox"
-                            name="allergenCodes"
-                            value="soya"
-                    >
-                    <span>Soy</span>
-                </label>
-
-            </div>
-        </section>
-
-        <div id="settings-message"
-             class="settings-message"
-             role="status"
-             hidden>
-        </div>
-
+        <!-- Buttons -->
         <div class="settings-actions">
-            <button id="save-settings-button"
+
+            <button
+                    id="save-settings-button"
                     type="submit"
-                    class="primary-button">
+                    class="primary-button save-button"
+            >
                 Create profile
             </button>
 
-            <a href="/meals.html" class="secondary-button">
+            <a
+                    href="/meals.html"
+                    class="secondary-button meals-button"
+            >
                 Go to Meals
             </a>
+
         </div>
 
     </form>

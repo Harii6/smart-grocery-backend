@@ -122,55 +122,53 @@ function createProductOption(
             selectedOptions.get(itemIndex)?.productId
         ) === Number(option.productId);
 
-    radio.addEventListener(
-        "change",
-        () => onSelectionChange(
-            itemIndex,
-            option
-        )
-    );
+    radio.addEventListener("change", () => {
+        onSelectionChange(itemIndex, option);
+    });
 
-    const content =
+    const main =
         document.createElement("div");
 
-    content.className =
-        "product-option-content";
+    main.className = "product-option-main";
 
     const name =
         document.createElement("strong");
 
+    name.className = "product-option-name";
     name.textContent = option.productName;
+
+    const metadata =
+        document.createElement("div");
+
+    metadata.className = "product-option-metadata";
 
     const store =
         document.createElement("span");
 
-    store.className = "store-badge";
-    store.textContent = option.store;
+    store.className = "product-option-store";
+    store.textContent =
+        option.store || "Unknown store";
 
-    const details =
-        document.createElement("p");
+    const packageSize =
+        document.createElement("span");
 
-    details.textContent =
-        `${formatMoney(option.price)} each · ` +
+    packageSize.className = "product-option-package";
+    packageSize.textContent =
         formatPackage(option);
 
-    const total =
-        document.createElement("p");
+    metadata.append(store, packageSize);
+    main.append(name, metadata);
 
-    total.className = "option-total";
+    const price =
+        document.createElement("strong");
 
-    total.textContent =
-        `${option.requiredPackages} package(s) · ` +
-        `${formatMoney(option.calculatedPrice)} total`;
+    price.className = "product-option-price";
 
-    content.append(
-        name,
-        store,
-        details,
-        total
+    price.textContent = formatMoney(
+        option.calculatedPrice ?? option.price
     );
 
-    label.append(radio, content);
+    label.append(radio, main, price);
 
     return label;
 }
@@ -272,61 +270,104 @@ function updateSummaryValues(
         maximumStores || "—";
 }
 
-export function renderStoreBreakdown(
-    selections
-) {
-    const container =
-        getElement("storeBreakdown");
+export function renderStoreBreakdown(selections) {
+    const container = getElement("storeBreakdown");
 
     container.replaceChildren();
+
+    if (!Array.isArray(selections) || selections.length === 0) {
+        return;
+    }
 
     const stores = new Map();
 
     selections.forEach(selection => {
-        if (!stores.has(selection.store)) {
-            stores.set(selection.store, []);
+        const storeName =
+            selection.store || "Unknown store";
+
+        if (!stores.has(storeName)) {
+            stores.set(storeName, []);
         }
 
-        stores
-            .get(selection.store)
-            .push(selection);
+        stores.get(storeName).push(selection);
     });
 
     [...stores.entries()]
-        .sort(
-            ([storeA], [storeB]) =>
-                storeA.localeCompare(storeB)
+        .sort(([storeA], [storeB]) =>
+            storeA.localeCompare(storeB)
         )
         .forEach(([store, products]) => {
             const card =
-                document.createElement("article");
+                document.createElement("details");
 
             card.className = "store-card";
 
-            const heading =
-                document.createElement("h3");
+            const summary =
+                document.createElement("summary");
 
-            heading.textContent = store;
+            summary.className = "store-card-summary";
 
-            const list =
-                document.createElement("ul");
+            const storeName =
+                document.createElement("span");
+
+            storeName.className = "store-card-name";
+            storeName.textContent = store;
+
+            const itemCount =
+                document.createElement("span");
+
+            itemCount.className = "store-card-count";
+
+            itemCount.textContent =
+                products.length === 1
+                    ? "1 item"
+                    : `${products.length} items`;
+
+            summary.append(storeName, itemCount);
+
+            const productList =
+                document.createElement("div");
+
+            productList.className = "store-product-list";
 
             products.forEach(product => {
-                const item =
-                    document.createElement("li");
+                const row =
+                    document.createElement("div");
+
+                row.className = "store-product-row";
+
+                const productName =
+                    document.createElement("span");
+
+                productName.className =
+                    "store-product-name";
+
+                productName.textContent =
+                    product.productName;
 
                 const quantity =
                     product.quantity ??
                     product.requiredPackages ??
                     1;
 
-                item.textContent =
-                    `${product.productName} × ${quantity}`;
+                const quantityElement =
+                    document.createElement("span");
 
-                list.appendChild(item);
+                quantityElement.className =
+                    "store-product-quantity";
+
+                quantityElement.textContent =
+                    `× ${quantity}`;
+
+                row.append(
+                    productName,
+                    quantityElement
+                );
+
+                productList.appendChild(row);
             });
 
-            card.append(heading, list);
+            card.append(summary, productList);
             container.appendChild(card);
         });
 }

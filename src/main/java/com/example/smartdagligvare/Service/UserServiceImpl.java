@@ -1,5 +1,6 @@
 package com.example.smartdagligvare.Service;
 
+import com.example.smartdagligvare.Client.LocationClient;
 import com.example.smartdagligvare.DAO.AllergenRepository;
 import com.example.smartdagligvare.DAO.AppUserRepository;
 import com.example.smartdagligvare.DAO.PreferenceRepository;
@@ -21,11 +22,13 @@ public class UserServiceImpl implements UserService {
     private final AppUserRepository appUserDao;
     private final PreferenceRepository preferenceDao;
     private final AllergenRepository allergenDao;
+    private final LocationClient locationClient;
 
-    public UserServiceImpl(AppUserRepository appUserDao, PreferenceRepository preferenceDao, AllergenRepository allergenDao) {
+    public UserServiceImpl(AppUserRepository appUserDao, PreferenceRepository preferenceDao, AllergenRepository allergenDao, LocationClient locationClient) {
         this.appUserDao = appUserDao;
         this.preferenceDao = preferenceDao;
         this.allergenDao = allergenDao;
+        this.locationClient = locationClient;
     }
 
     @Override
@@ -51,6 +54,10 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public AppUser save(UserRequest request) {
+
+
+
+
         AppUser user = new AppUser();
 
         user.setNumberOfPeople(
@@ -92,6 +99,9 @@ public class UserServiceImpl implements UserService {
                 user.getAllergens().add(allergen);
             }
         }
+
+        applyLocation(user, request);
+        user.setSettingsCompleted(true);
 
         return appUserDao.save(user);
     }
@@ -157,6 +167,69 @@ public class UserServiceImpl implements UserService {
             }
         }
 
+        applyLocation(user, request);
+
         return appUserDao.save(user);
     }
+
+    private void applyLocation(
+            AppUser user,
+            UserRequest request
+    ) {
+        if (
+                request.locationText() == null ||
+                        request.locationText().isBlank()
+        ) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Location is required."
+            );
+        }
+
+        if (
+                        request.radiusKm() == null ||
+                        request.radiusKm() < 1 ||
+                        request.radiusKm() > 50
+        ) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Radius must be between 1 and 50 km."
+            );
+        }
+
+        String locationText =
+                request.locationText().trim();
+
+        boolean locationChanged =
+                user.getLocationText() == null ||
+                        !locationText.equalsIgnoreCase(
+                                user.getLocationText()
+                        ) ||
+                        user.getLatitude() == null ||
+                        user.getLongitude() == null;
+
+        /*
+         * Only contact the geocoding API when the location
+         * changed or coordinates are missing.
+         */
+        if (locationChanged) {
+            LocationClient.Coordinates coordinates =
+                    locationClient.findCoordinates(
+                            locationText
+                    );
+
+            user.setLatitude(
+                    coordinates.latitude()
+            );
+
+            user.setLongitude(
+                    coordinates.longitude()
+            );
+        }
+
+        user.setLocationText(locationText);
+        user.setRadiusKm(request.radiusKm());
+    }
+
+
 }

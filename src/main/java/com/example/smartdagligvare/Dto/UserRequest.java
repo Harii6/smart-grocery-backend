@@ -31,6 +31,20 @@ public record UserRequest(
         )
         int maximumStores,
 
+        @NotBlank(
+                message = "is required"
+        )
+        String locationText,
+
+        @NotNull(
+                message = "is required"
+        )
+        @DecimalMin(
+                value = "0.01",
+                message = "must be greater than 0"
+        )
+        Double radiusKm,
+
         List<
                 @NotBlank(
                         message = "preference code cannot be blank"

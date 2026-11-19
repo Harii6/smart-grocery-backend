@@ -1,0 +1,10 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "message": {
+        "content": "{\"recipes\":[{\"name\":\"Ris med grønnsaker\",\"servings\":2,\"preparationTimeMinutes\":20,\"caloriesPerServing\":400,\"proteinGramsPerServing\":12.5,\"ingredients\":[{\"searchTerm\":\"ris\",\"amount\":200,\"unit\":\"g\",\"category\":\"PANTRY_OTHER\"}],\"instructions\":[\"Kok risen.\"]}]}"
+      }
+    }
+  ]
+}

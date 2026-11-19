@@ -1,0 +1,22 @@
+{
+  "data": [
+    {
+      "id": 101,
+      "name": "Ris 500 g",
+      "brand": "Test",
+      "vendor": "Test",
+      "ean": "1234567890123",
+      "current_price": 24.90,
+      "current_unit_price": 49.80,
+      "weight": 500,
+      "weight_unit": "g",
+      "store": {
+        "name": "Meny",
+        "code": "MENY_NO",
+        "url": null,
+        "logo": null
+      },
+      "allergens": []
+    }
+  ]
+}

@@ -14,20 +14,108 @@
     <link rel="stylesheet" href="/css/meals.css">
 
     <script src="/js/meals.js" defer></script>
+    <script src="/js/sidebar.js" defer></script>
+    <script src="/js/logout.js" defer></script>
 </head>
 
-<body>
+<body class="with-sidebar">
 
-<header class="topbar">
-    <a class="brand" href="/">Smart Grocery</a>
+<aside class="app-sidebar">
+    <a class="sidebar-brand" href="/">
+        <span class="sidebar-logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+                <path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/>
+                <circle cx="12" cy="10" r="2.5"/>
+            </svg>
+        </span>
 
-    <nav>
-        <a href="/">Home</a>
-        <a class="active" href="/meals.html">Meals</a>
-        <a href="/shopping.html">Shopping</a>
-        <a href="/settings.html">Settings</a>
+        <span class="sidebar-label">Smart Grocery</span>
+    </a>
+
+    <nav class="sidebar-nav" aria-label="Main navigation">
+
+        <a href="/">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m3 10 9-7 9 7v10H3Z"/>
+                <path d="M9 20v-8h6v8"/>
+            </svg>
+            <span class="sidebar-label">Home</span>
+        </a>
+
+        <a href="/meals.html">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="16" rx="2"/>
+                <path d="M7 3v4m10-4v4M3 11h18M8 15h2m4 0h2"/>
+            </svg>
+            <span class="sidebar-label">Meals</span>
+        </a>
+
+        <a href="/shopping.html">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M2 3h3l3 13h11l3-9H6"/>
+                <circle cx="9" cy="21" r="1"/>
+                <circle cx="18" cy="21" r="1"/>
+            </svg>
+            <span class="sidebar-label">Shopping</span>
+        </a>
+
+        <a href="/products.html">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 7V4h3M17 4h3v3M20 17v3h-3M7 20H4v-3"/>
+                <path d="M8 8v8M11 8v8M14 8v8M17 8v8"/>
+            </svg>
+            <span class="sidebar-label">Products</span>
+        </a>
+
+        <a href="/savings.html" aria-label="Savings" title="Savings">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m3 6 6 6 4-4 8 8"/>
+                <path d="M15 16h6v-6"/>
+            </svg>
+            <span class="sidebar-label">Savings</span>
+        </a>
+
+        <a href="/settings.html">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 7h16M4 17h16"/>
+                <circle cx="9" cy="7" r="3"/>
+                <circle cx="15" cy="17" r="3"/>
+            </svg>
+            <span class="sidebar-label">Settings</span>
+        </a>
     </nav>
-</header>
+
+    <button type="button"
+            class="sidebar-logout"
+            aria-label="Log out"
+            title="Log out">
+
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 5H5v14h4"/>
+            <path d="M9 12h12m-4-4 4 4-4 4"/>
+        </svg>
+
+        <span class="sidebar-label">Log out</span>
+    </button>
+
+    <p class="sidebar-logout-message"
+       role="status"
+       hidden></p>
+
+    <button
+            type="button"
+            class="sidebar-toggle"
+            aria-expanded="true"
+            aria-label="Minimize sidebar"
+            title="Minimize sidebar"
+    >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m14 7-5 5 5 5"/>
+        </svg>
+
+        <span class="sidebar-label">Minimize</span>
+    </button>
+</aside>
 
 <main class="page meals-page">
 

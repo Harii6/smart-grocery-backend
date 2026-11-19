@@ -18,17 +18,16 @@ public class RecipeClient {
     private final String model;
 
     public RecipeClient(
-            @Value("${groq.base-url}") String baseUrl,
-            @Value("${groq.api-key}") String apiKey,
-            @Value("${groq.model}") String model,
+            RestClient.Builder builder,
+            @Value("${openai.base-url}") String baseUrl,
+            @Value("${openai.api-key}") String apiKey,
+            @Value("${openai.model}") String model,
             ObjectMapper objectMapper
     ) {
-        this.restClient = RestClient.builder()
+        this.restClient = builder
+                .clone()
                 .baseUrl(baseUrl)
-                .defaultHeader(
-                        "Authorization",
-                        "Bearer " + apiKey
-                )
+                .defaultHeader("Authorization", "Bearer " + apiKey)
                 .build();
 
         this.model = model;
@@ -51,15 +50,23 @@ public class RecipeClient {
 
                 "messages", List.of(
                         Map.of(
+                                "role", "developer",
+                                "content",
+                                "Return only one valid JSON object. "
+                                        + "Do not use Markdown or code fences."
+                        ),
+                        Map.of(
                                 "role", "user",
                                 "content", prompt
                         )
                 ),
-                "max_completion_tokens", 4096,
+
+                "max_completion_tokens", 8000,
                 "reasoning_effort", "low",
-                "include_reasoning", false
 
-
+                "response_format", Map.of(
+                        "type", "json_object"
+                )
         );
 
         JsonNode response = restClient.post()
@@ -70,7 +77,7 @@ public class RecipeClient {
 
         if (response == null) {
             throw new RuntimeException(
-                    "Groq returned an empty response"
+                    "OpenAI returned an empty response"
             );
         }
 
@@ -82,7 +89,7 @@ public class RecipeClient {
 
         if (!"stop".equals(finishReason)) {
             throw new RuntimeException(
-                    "Groq stopped early. finish_reason=" + finishReason
+                    "OpenAI stopped early. finish_reason="  + finishReason
             );
         }
 
@@ -95,7 +102,7 @@ public class RecipeClient {
         if (contentNode.isMissingNode()
                 || contentNode.asText().isBlank()) {
             throw new RuntimeException(
-                    "Groq did not return recipe JSON"
+                    "OpenAI did not return recipe JSON"
             );
         }
 
@@ -108,7 +115,7 @@ public class RecipeClient {
             );
         } catch (Exception exception) {
             throw new RuntimeException(
-                    "Could not convert Groq response into recipes. "
+                    "Could not convert OpenAI response into recipes. "
                             + "Response: " + recipeJson,
                     exception
             );
@@ -129,48 +136,67 @@ public class RecipeClient {
                 Allergens that must be avoided: %s
 
                 Requirements:
-                - Every ingredient object must represent exactly one product.
-                - Never combine multiple ingredients inside one searchTerm.
-                - Paprikapulver, spisskummen, salt and pepper must be separate ingredients.
-                - For fresh vegetables, use specific search terms such as:
-                - "gul løk", "hvitløk", "gulrøtter" and "rød paprika".
-                - Return exactly one valid JSON object.
-                - preparationTimeMinutes must be the estimated total preparation and cooking time as an integer.
-                - caloriesPerServing must be the estimated calories for one serving as an integer.
-                - proteinGramsPerServing must be the estimated grams of protein for one serving as a number.
-                - Calories and protein must be calculated per serving, not for the entire recipe.
-                - Use the ingredient amounts to provide reasonable nutritional estimates.
-                - Do not return carbohydrate or fat information.
-                - Write recipe names and instructions in Norwegian.
-                - Use ingredients commonly available in Norwegian grocery stores.
-                - Prefer ordinary, affordable ingredients available throughout the year.
-                - Avoid niche ingredients that normally require specialist stores.
-                - searchTerm must use a short and generic Norwegian product name.
-                - Prefer one or two words that describe the basic ingredient.
-                - Do not include brands, product ranges or marketing descriptions.
-                - Do not include preparation methods, quality descriptions, packaging types or special product variants.
-                - Remove unnecessary descriptive words when the basic ingredient is enough for a product search.
-                - Choose search terms likely to match several products in an ordinary Norwegian grocery store.
-                - Write all ingredient names in correct Norwegian Bokmål.
-                - Every searchTerm must be a real standalone grocery product.
-                - Do not use Danish or Swedish ingredient names.
-                - Do not invent compound words or ingredient names.
-                - Do not use the name of a prepared dish as an ingredient.
-                - Before returning the JSON, verify that every searchTerm could reasonably appear in a Norwegian grocery-store product search.
-                - Use Norwegian grocery-product names in searchTerm.
-                - Respect all listed food preferences.
-                - Do not include any listed allergens.
-                - Prefer ordinary products available in Norwegian supermarkets.
-                - Prefer inexpensive recipes.
-                - Every recipe must contain servings, ingredients and instructions.
-                - amount must always be a number.
-                - unit must always be a string.
-                - Do not return Markdown.
-                - Do not surround the response with code fences.
-                
+                Requirements:
+                 - Ingredient amounts must be the total needed for all servings.
+                 - Use g for mass, ml for volume, and piece for countable ingredients.
+                 - Do not use package, boks, pose or pakke as units.
+                 - Keep ingredient names and units consistent across recipes.
+                 - Every ingredient must contain a category.
+                 - category must be exactly one of these values:
+                 - MEAT_FISH
+                 - DAIRY
+                 - FRUIT_VEGETABLES
+                 - BAKERY
+                 - PANTRY_OTHER
+                 - Use MEAT_FISH for meat, poultry, fish and seafood.
+                 - Use DAIRY for milk, cheese, yoghurt, cream, butter and eggs.
+                 - Use FRUIT_VEGETABLES for fruit, vegetables, herbs and berries.
+                 - Use BAKERY for bread, tortillas and other baked products.
+                 - Use PANTRY_OTHER for pasta, rice, grains, beans, lentils, oil, sauces, spices and all remaining ingredients.
+                 - Never invent additional category values.
+                 - Return the category using uppercase letters exactly as shown.
+                 - Every ingredient object must represent exactly one product.
+                 - Never combine multiple ingredients inside one searchTerm.
+                 - Paprikapulver, spisskummen, salt and pepper must be separate ingredients.
+                 - For fresh vegetables, use specific search terms such as:
+                 - "gul løk", "hvitløk", "gulrøtter" and "rød paprika".
+                 - Return exactly one valid JSON object.
+                 - preparationTimeMinutes must be the estimated total preparation and cooking time as an integer.
+                 - caloriesPerServing must be the estimated calories for one serving as an integer.
+                 - proteinGramsPerServing must be the estimated grams of protein for one serving as a number.
+                 - Calories and protein must be calculated per serving, not for the entire recipe.
+                 - Use the ingredient amounts to provide reasonable nutritional estimates.
+                 - Do not return carbohydrate or fat information.
+                 - Write recipe names and instructions in Norwegian.
+                 - Use ingredients commonly available in Norwegian grocery stores.
+                 - Prefer ordinary, affordable ingredients available throughout the year.
+                 - Avoid niche ingredients that normally require specialist stores.
+                 - searchTerm must use a short and generic Norwegian product name.
+                 - Prefer one or two words that describe the basic ingredient.
+                 - Do not include brands, product ranges or marketing descriptions.
+                 - Do not include preparation methods, quality descriptions, packaging types or special product variants.
+                 - Remove unnecessary descriptive words when the basic ingredient is enough for a product search.
+                 - Choose search terms likely to match several products in an ordinary Norwegian grocery store.
+                 - Write all ingredient names in correct Norwegian Bokmål.
+                 - Every searchTerm must be a real standalone grocery product.
+                 - Do not use Danish or Swedish ingredient names.
+                 - Do not invent compound words or ingredient names.
+                 - Do not use the name of a prepared dish as an ingredient.
+                 - Before returning the JSON, verify that every searchTerm could reasonably appear in a Norwegian grocery-store product search.
+                 - Use Norwegian grocery-product names in searchTerm.
+                 - Respect all listed food preferences.
+                 - Do not include any listed allergens.
+                 - Prefer ordinary products available in Norwegian supermarkets.
+                 - Prefer inexpensive recipes.
+                 - Every recipe must contain servings, ingredients and instructions.
+                 - amount must always be a number.
+                 - unit must always be a string.
+                 - Do not return Markdown.
+                 - Do not surround the response with code fences.
+               \s
 
                 The JSON must have exactly this structure:
-                
+               \s
                    {
                      "recipes": [
                        {
@@ -183,12 +209,14 @@ public class RecipeClient {
                            {
                              "searchTerm": "linser",
                              "amount": 500,
-                             "unit": "g"
+                             "unit": "g",
+                             "category": "PANTRY_OTHER"
                            },
                            {
-                             "searchTerm": "tomater",
-                             "amount": 2,
-                             "unit": "boks"
+                             "searchTerm": "hakkede tomater",
+                             "amount": 800,
+                             "unit": "g",
+                             "category": "FRUIT_VEGETABLES"
                            }
                          ],
                          "instructions": [
@@ -198,7 +226,7 @@ public class RecipeClient {
                        }
                      ]
                    }
-                """.formatted(
+               \s""".formatted(
                 numberOfPeople,
                 preferences,
                 allergens

@@ -14,15 +14,13 @@ public class ProductSearchService {
     private final RestClient restClient;
 
     public ProductSearchService(
+            RestClient.Builder builder,
             @Value("${kassalapp.base-url}") String baseUrl,
             @Value("${kassalapp.api-key}") String apiKey
     ) {
-        this.restClient = RestClient.builder()
+        this.restClient = builder.clone()
                 .baseUrl(baseUrl)
-                .defaultHeader(
-                        "Authorization",
-                        "Bearer " + apiKey
-                )
+                .defaultHeader("Authorization", "Bearer " + apiKey)
                 .build();
     }
 

@@ -117,15 +117,53 @@ async function generateMealPlan() {
     );
 
     try {
+        const csrfResponse = await fetch("/api/auth/csrf", {
+            credentials: "same-origin",
+            cache: "no-store",
+            headers: {
+                Accept: "application/json"
+            }
+        });
+
+        if (!csrfResponse.ok) {
+            throw new Error("Could not prepare a secure request.");
+        }
+
+        const csrf = await csrfResponse.json();
+
+        if (
+            typeof csrf.headerName !== "string" ||
+            typeof csrf.token !== "string" ||
+            !csrf.headerName ||
+            !csrf.token
+        ) {
+            throw new Error("The server returned an invalid security token.");
+        }
+
         const response = await fetch(
             `/api/meal-plans/${userId}/generate`,
             {
                 method: "POST",
+                credentials: "same-origin",
                 headers: {
-                    "Accept": "application/json"
+                    Accept: "application/json",
+                    [csrf.headerName]: csrf.token
                 }
             }
         );
+
+        if (
+            response.status === 401 ||
+            (
+                response.redirected &&
+                ["/login", "/login.html"].includes(
+                    new URL(response.url).pathname
+                )
+            )
+        ) {
+            window.location.replace("/login.html");
+            throw new Error("Your session has expired. Please sign in again.");
+        }
 
         const responseBody = await readResponseBody(response);
 
@@ -137,6 +175,9 @@ async function generateMealPlan() {
                 )
             );
         }
+
+        localStorage.removeItem("shoppingCalculation");
+        localStorage.removeItem("shoppingSelections");
 
         useMealPlan(responseBody, true);
 
@@ -349,101 +390,162 @@ function updateMealSelection(key, shouldSelect, checkbox) {
 
 
 function renderSelectedMeals() {
-    selectedMeals.innerHTML = "";
+    selectedMeals.replaceChildren();
 
-    const selectedKeys =
-        selections[activeDay] || [];
+    const selectedKeys = selections[activeDay] || [];
+    const mealTypes = ["Breakfast", "Lunch", "Dinner"];
 
-    const mealTypes = [
-        "Breakfast",
-        "Lunch",
-        "Dinner"
-    ];
+    for (let position = 0; position < MAX_MEALS_PER_DAY; position++) {
+        const entry = findRecipeByKey(selectedKeys[position]);
 
-    for (
-        let position = 0;
-        position < MAX_MEALS_PER_DAY;
-        position++
-    ) {
-        const selectedKey = selectedKeys[position];
-
-        if (!selectedKey) {
-            selectedMeals.append(
-                createEmptyMealSlot(position)
-            );
-
+        if (!entry) {
+            selectedMeals.append(createEmptyMealSlot(position));
             continue;
         }
 
-        const recipeEntry =
-            findRecipeByKey(selectedKey);
+        const recipe = entry.recipe;
 
-        if (!recipeEntry) {
-            selectedMeals.append(
-                createEmptyMealSlot(position)
-            );
+        const card = document.createElement("details");
+        card.className = "meal-accordion";
 
-            continue;
-        }
+        const summary = document.createElement("summary");
+        summary.className = "meal-accordion-header";
 
-        const recipe = recipeEntry.recipe;
+        const information = document.createElement("div");
+        information.className = "meal-accordion-info";
 
-        const card =
-            document.createElement("button");
+        const title = document.createElement("span");
+        title.className = "meal-accordion-title";
+        title.textContent = recipe.name || "Recipe";
 
-        card.type = "button";
-        card.className = "selected-meal-card";
+        const type = document.createElement("span");
+        type.className = "meal-accordion-type";
+        type.textContent = mealTypes[position];
 
-        const mealType =
-            document.createElement("span");
+        information.append(title, type);
 
-        mealType.className = "selected-meal-type";
-        mealType.textContent = mealTypes[position];
+        const metadata = document.createElement("div");
+        metadata.className = "meal-accordion-meta";
 
-        const information =
-            document.createElement("div");
+        const calories = document.createElement("span");
+        calories.textContent =
+            `${formatRecipeNumber(recipe.caloriesPerServing)} kcal`;
 
-        information.className =
-            "selected-meal-information";
+        const servings = document.createElement("span");
+        servings.className = "meal-servings";
+        servings.textContent =
+            `${recipe.servings ?? "—"} servings`;
 
-        const title =
-            document.createElement("h3");
+        const arrow = document.createElement("span");
+        arrow.className = "meal-accordion-arrow";
+        arrow.setAttribute("aria-hidden", "true");
+        arrow.textContent = "⌄";
 
-        title.textContent =
-            recipe.name ||
-            `Recipe ${recipeEntry.index + 1}`;
+        metadata.append(calories, servings, arrow);
+        summary.append(information, metadata);
 
-        const metadata =
-            document.createElement("p");
+        const content = document.createElement("div");
+        content.className = "meal-accordion-content";
 
-        metadata.className =
-            "selected-meal-metadata";
+        const nutrition = document.createElement("div");
+        nutrition.className = "meal-nutrition";
 
-        const time =
-            recipe.preparationTimeMinutes ?? "—";
-
-        const calories =
-            recipe.caloriesPerServing ?? "—";
-
-        metadata.textContent =
-            `${time} min · ${calories} kcal`;
-
-        information.append(title, metadata);
-
-        const chefIcon = createChefIcon();
-
-        card.append(
-            mealType,
-            information,
-            chefIcon
+        nutrition.append(
+            createMealNutrition(
+                recipe.caloriesPerServing,
+                "kcal",
+                "Calories"
+            ),
+            createMealNutrition(
+                recipe.proteinGramsPerServing,
+                "g",
+                "Protein"
+            )
         );
 
-        card.addEventListener("click", () => {
-            openRecipeDialog(recipe);
-        });
+        const note = document.createElement("p");
+        note.className = "meal-nutrition-note";
+        note.textContent = "Estimated nutrition per serving.";
 
+        const ingredientsBox = document.createElement("section");
+        ingredientsBox.className = "meal-ingredients-panel";
+
+        const ingredientsTitle = document.createElement("h4");
+        ingredientsTitle.textContent = "Ingredients";
+
+        const ingredients = document.createElement("ul");
+
+        for (const ingredient of recipe.ingredients || []) {
+            const item = document.createElement("li");
+            item.textContent =
+                `${ingredient.searchTerm || "Ingredient"} · ` +
+                `${formatRecipeNumber(ingredient.amount)} ` +
+                `${ingredient.unit || ""}`;
+
+            ingredients.append(item);
+        }
+
+        ingredientsBox.append(ingredientsTitle, ingredients);
+
+        const instructionsBox = document.createElement("section");
+        instructionsBox.className = "meal-instructions-panel";
+
+        const instructionsTitle = document.createElement("h4");
+        instructionsTitle.textContent = "Recipe";
+
+        const time = document.createElement("p");
+        time.className = "meal-preparation-time";
+        time.textContent =
+            `${recipe.preparationTimeMinutes ?? "—"} min`;
+
+        const instructions = document.createElement("ol");
+
+        if (
+            Array.isArray(recipe.instructions) &&
+            recipe.instructions.length > 0
+        ) {
+            recipe.instructions.forEach(instruction => {
+                const step = document.createElement("li");
+                step.textContent = instruction;
+                instructions.append(step);
+            });
+        } else {
+            const step = document.createElement("li");
+            step.textContent = "No instructions available.";
+            instructions.append(step);
+        }
+
+        instructionsBox.append(
+            instructionsTitle,
+            time,
+            instructions
+        );
+
+        content.append(
+            nutrition,
+            note,
+            ingredientsBox,
+            instructionsBox
+        );
+
+        card.append(summary, content);
         selectedMeals.append(card);
     }
+}
+
+function createMealNutrition(value, unit, label) {
+    const box = document.createElement("div");
+    box.className = "meal-nutrition-value";
+
+    const amount = document.createElement("strong");
+    amount.textContent = `${formatRecipeNumber(value)} ${unit}`;
+
+    const description = document.createElement("span");
+    description.textContent = label;
+
+    box.append(amount, description);
+
+    return box;
 }
 
 function createChefIcon() {
@@ -777,6 +879,78 @@ function formatRecipeNumber(value) {
         maximumFractionDigits: 2
     }).format(number);
 }
+
+async function prepareHomeCards(userId) {
+    const [shoppingResponse, userResponse] =
+        await Promise.all([
+            fetch(`/api/shopping-lists/${userId}`),
+            fetch(`/api/users/${userId}`)
+        ]);
+
+    if (!shoppingResponse.ok) {
+        throw new Error(
+            `Could not prepare shopping data: ${shoppingResponse.status}`
+        );
+    }
+
+    if (!userResponse.ok) {
+        throw new Error(
+            `Could not load user settings: ${userResponse.status}`
+        );
+    }
+
+    const shoppingList = await shoppingResponse.json();
+    const user = await userResponse.json();
+    const recommendation = shoppingList.recommendation;
+
+    if (
+        !recommendation ||
+        !recommendation.possible ||
+        !Array.isArray(recommendation.selections)
+    ) {
+        localStorage.removeItem("shoppingCalculation");
+        return;
+    }
+
+    const selections = recommendation.selections.map(
+        selection => ({
+            ...selection,
+
+            calculatedPrice: Number(
+                selection.calculatedPrice ??
+                Number(selection.price) *
+                Number(selection.quantity ?? 1)
+            )
+        })
+    );
+
+    const weeklyBudget = Number(user.weeklyBudget);
+    const totalPrice = selections.reduce(
+        (sum, selection) =>
+            sum + Number(selection.calculatedPrice),
+        0
+    );
+
+    const storesUsed = [
+        ...new Set(
+            selections.map(selection => selection.store)
+        )
+    ];
+
+    localStorage.setItem(
+        "shoppingCalculation",
+        JSON.stringify({
+            userId: Number(userId),
+            weeklyBudget: weeklyBudget,
+            totalPrice: totalPrice,
+            remainingBudget: weeklyBudget - totalPrice,
+            maximumStores: Number(user.maximumStores),
+            storesUsed: storesUsed,
+            selections: selections
+        })
+    );
+}
+
 
 recipeDialogClose.addEventListener("click", () => {
     recipeDialog.close();

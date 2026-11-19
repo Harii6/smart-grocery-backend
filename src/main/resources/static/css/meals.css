@@ -720,3 +720,313 @@ body:has(.recipe-dialog[open]) {
         height: 40px;
     }
 }
+
+/* =====================================
+   EXPANDABLE SELECTED MEALS
+   ===================================== */
+
+#selectedMeals {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.meal-accordion {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    background: #fff;
+    box-shadow: 0 3px 12px rgba(53, 37, 27, 0.03);
+}
+
+.meal-accordion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    min-height: 76px;
+    padding: 16px 20px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.meal-accordion-header::-webkit-details-marker {
+    display: none;
+}
+
+.meal-accordion-header:hover {
+    background: #f7faf7;
+}
+
+.meal-accordion-header:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: -4px;
+    border-radius: 12px;
+}
+
+.meal-accordion[open] > summary {
+    background: #f7faf7;
+    border-bottom: 1px solid #e3ebe5;
+}
+
+.meal-accordion-info {
+    display: grid;
+    gap: 5px;
+    min-width: 0;
+}
+
+.meal-accordion-title {
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.meal-accordion-type {
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 400;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.meal-accordion-meta {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 14px;
+    color: var(--text);
+    font-size: 0.78rem;
+}
+
+.meal-servings {
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: #f2f0eb;
+    color: var(--muted);
+    font-size: 0.72rem;
+}
+
+.meal-accordion-arrow {
+    display: inline-block;
+    color: var(--green);
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.meal-accordion[open] .meal-accordion-arrow {
+    transform: rotate(180deg);
+}
+
+.meal-accordion-content {
+    padding: 16px 20px 20px;
+}
+
+.meal-nutrition {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.meal-nutrition-value {
+    display: grid;
+    gap: 5px;
+    padding: 13px;
+    border-radius: 11px;
+    background: #f8f6f3;
+    text-align: center;
+}
+
+.meal-nutrition-value strong {
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.meal-nutrition-value span {
+    color: var(--muted);
+    font-size: 0.73rem;
+}
+
+.meal-nutrition-note {
+    margin: 8px 0 16px;
+    color: var(--muted);
+    font-size: 0.72rem;
+}
+
+.meal-ingredients-panel,
+.meal-instructions-panel {
+    padding: 16px 18px;
+    border: 1px solid #dcebe1;
+    border-radius: 13px;
+    background: #f3faf6;
+}
+
+.meal-ingredients-panel {
+    margin-bottom: 12px;
+    background: #fafbf9;
+}
+
+.meal-accordion-content h4 {
+    margin: 0 0 10px;
+    color: var(--green);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.meal-accordion-content ul,
+.meal-accordion-content ol {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.meal-accordion-content li {
+    padding: 3px 0;
+    color: var(--text);
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+.meal-instructions-panel li::marker {
+    color: var(--green);
+    font-weight: 600;
+}
+
+.meal-preparation-time {
+    margin: -4px 0 10px;
+    color: var(--muted);
+    font-size: 0.75rem;
+}
+
+/* Compact placeholders before a meal is selected. */
+
+#selectedMeals .empty-meal-slot {
+    min-height: 76px;
+    height: auto;
+    padding: 18px 20px;
+    border-radius: 13px;
+}
+
+@media (max-width: 560px) {
+    .meal-accordion-header {
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 14px 16px;
+    }
+
+    .meal-accordion-info {
+        flex: 1 1 100%;
+    }
+
+    .meal-accordion-meta {
+        width: 100%;
+    }
+
+    .meal-accordion-arrow {
+        margin-left: auto;
+    }
+
+    .meal-accordion-content {
+        padding: 14px 16px 16px;
+    }
+}
+
+.meal-ingredients-panel ul {
+    padding: 0;
+    list-style: none;
+}
+
+.meal-ingredients-panel li {
+    padding: 8px 0;
+    border-bottom: 1px solid #e5ebe5;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 0.88rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #46564b;
+}
+
+.meal-ingredients-panel li:last-child {
+    border-bottom: none;
+}
+
+/* Available recipe cards */
+
+#mealChoices {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+#mealChoices .meal-choice {
+    grid-column: auto;
+    width: auto;
+    min-width: 0;
+    min-height: 76px;
+    padding: 18px;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    border: 1px solid #dce7df;
+    border-radius: 12px;
+    background: #f3faf6;
+    cursor: pointer;
+}
+
+#mealChoices .meal-choice:hover {
+    background: #eaf4ee;
+    border-color: #9bbba6;
+}
+
+#mealChoices .meal-choice:has(input:checked) {
+    background: #e2efe6;
+    border-color: var(--green);
+}
+
+#mealChoices .meal-choice:has(input:focus-visible) {
+    outline: 2px solid var(--green);
+    outline-offset: 3px;
+}
+
+#mealChoices .meal-choice-name {
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 0.92rem;
+    font-weight: 500;
+    line-height: 1.5;
+    color: #354b3e;
+}
+
+#mealChoices input {
+    flex-shrink: 0;
+    margin: 0;
+    accent-color: var(--green);
+}
+
+@media (max-width: 560px) {
+    #mealChoices {
+        grid-template-columns: 1fr;
+    }
+}
+
+#mealChoices .meal-choice {
+    background: #ffffff;
+    border-color: var(--border);
+}
+
+#mealChoices .meal-choice-name {
+    color: #000000;
+}
+
+#mealChoices .meal-choice:hover {
+    background: #fafafa;
+}
+
+#mealChoices .meal-choice:has(input:checked) {
+    background: #ffffff;
+    border-color: var(--green);
+}

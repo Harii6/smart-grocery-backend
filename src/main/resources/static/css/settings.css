@@ -329,3 +329,150 @@
         padding: 0 15px;
     }
 }
+
+.settings-card.household-card {
+    padding: 0;
+    overflow: hidden;
+}
+
+.household-row {
+    min-height: 58px;
+    padding: 0 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.household-row + .household-row {
+    border-top: 1px solid #ebe5dc;
+}
+
+.household-row > span {
+    color: #52796c;
+}
+
+.household-size-row {
+    background: #f7fbf9;
+}
+
+.household-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+#number-of-people {
+    width: 42px;
+    padding: 4px 0;
+
+    background: transparent;
+    border: 0;
+    outline: 0;
+
+    color: #17251f;
+    font: inherit;
+    font-weight: 700;
+    text-align: center;
+
+    appearance: textfield;
+}
+
+#number-of-people::-webkit-inner-spin-button,
+#number-of-people::-webkit-outer-spin-button {
+    appearance: none;
+    margin: 0;
+}
+
+.counter-button {
+    width: 34px;
+    height: 34px;
+
+    display: grid;
+    place-items: center;
+
+    background: #ffffff;
+    border: 1px solid #ddd8cf;
+    border-radius: 50%;
+
+    color: #65736d;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.counter-button:hover {
+    background: #f4f8f6;
+}
+
+.counter-button.add {
+    color: #16825c;
+    border-color: #16825c;
+    background: #effaf5;
+}
+
+.counter-button:focus-visible,
+#number-of-people:focus-visible {
+    outline: 3px solid rgba(39, 132, 95, 0.22);
+    outline-offset: 2px;
+}
+
+.settings-card.location-card {
+    padding: 0;
+    overflow: hidden;
+}
+
+.location-setting-row {
+    min-height: 58px;
+    padding: 0 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.location-setting-row + .location-setting-row {
+    border-top: 1px solid #ebe5dc;
+}
+
+.location-setting-row > span:first-child {
+    color: #52796c;
+}
+
+.location-setting-row input {
+    padding: 8px 10px;
+
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid transparent;
+    outline: 0;
+
+    color: #17251f;
+    font: inherit;
+    font-weight: 600;
+    text-align: right;
+}
+
+#location-address {
+    width: min(300px, 60%);
+}
+
+#location-address:focus,
+#location-radius:focus {
+    border-bottom-color: #16825c;
+}
+
+.radius-input {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    color: #16825c;
+    font-weight: 600;
+}
+
+#location-radius {
+    width: 46px;
+    padding-inline: 0;
+    color: #16825c;
+}

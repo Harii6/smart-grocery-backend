@@ -1,126 +1,174 @@
 const USER_ID_KEY = "userId";
+const LOCATION_SETTINGS_KEY = "locationSettings";
 
 const settingsForm = document.getElementById("settings-form");
 const saveButton = document.getElementById("save-settings-button");
 const messageElement = document.getElementById("settings-message");
 const profileStatusElement = document.getElementById("profile-status");
 
-document.addEventListener("DOMContentLoaded", loadExistingUser);
+const numberOfPeopleInput =
+    document.getElementById("number-of-people");
+
+const householdSizeElement =
+    document.getElementById("household-size");
+
+const householdSizeLabel =
+    document.getElementById("household-size-label");
+
+const locationAddressInput =
+    document.getElementById("location-address");
+
+const locationRadiusInput =
+    document.getElementById("location-radius");
+
+let profileLoaded = false;
+let saving = false;
+let currentUser = null;
+
+saveButton.disabled = true;
+saveButton.textContent = "Loading...";
+
 settingsForm.addEventListener("submit", saveSettings);
 
+document.getElementById("decrease-adults")
+    .addEventListener("click", () => changeAdultCount(-1));
+
+document.getElementById("increase-adults")
+    .addEventListener("click", () => changeAdultCount(1));
+
+numberOfPeopleInput.addEventListener(
+    "input",
+    updateHouseholdDisplay
+);
+
+updateHouseholdDisplay();
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", loadExistingUser);
+} else {
+    loadExistingUser();
+}
+
+function changeAdultCount(change) {
+    const currentValue = Number(numberOfPeopleInput.value) || 1;
+
+    numberOfPeopleInput.value = Math.min(
+        20,
+        Math.max(1, currentValue + change)
+    );
+
+    updateHouseholdDisplay();
+}
+
+function updateHouseholdDisplay() {
+    const count = Number(numberOfPeopleInput.value) || 1;
+
+    householdSizeElement.textContent = count;
+    householdSizeLabel.textContent = count === 1 ? "person" : "people";
+}
+
 async function loadExistingUser() {
-    const userId = localStorage.getItem(USER_ID_KEY);
-
-    if (!userId) {
-        showCreateMode();
-        return;
-    }
-
     try {
-        const response = await fetch(`/api/users/${userId}`);
+        const user = await requestJson("/api/users/me");
 
-        if (response.status === 404) {
-            clearUserData();
-            showCreateMode();
+        currentUser = user;
+        populateForm(user);
+        cacheCurrentUser(user);
 
+        profileLoaded = true;
+        updateProfileStatus();
+
+        if (!user.settingsCompleted) {
             showMessage(
-                "The previous profile no longer exists. Create a new profile.",
+                "Your account is ready. Complete your settings before generating meals.",
                 "warning"
             );
-
-            return;
         }
-
-        if (!response.ok) {
-            throw new Error(await readError(response));
-        }
-
-        const user = await response.json();
-
-        populateForm(user);
-        showUpdateMode(user.id);
     } catch (error) {
+        profileStatusElement.textContent = "Could not load your account.";
+
         showMessage(
-            `Could not load your profile: ${error.message}`,
+            `${error.message} Reload this page to try again.`,
             "error"
         );
+    } finally {
+        saveButton.disabled = !profileLoaded;
+        saveButton.textContent = profileLoaded
+            ? "Save settings"
+            : "Settings unavailable";
     }
 }
 
 async function saveSettings(event) {
     event.preventDefault();
 
-    if (!settingsForm.reportValidity()) {
+    if (!profileLoaded || saving || !settingsForm.reportValidity()) {
         return;
     }
 
-    const existingUserId = localStorage.getItem(USER_ID_KEY);
     const requestBody = createRequestBody();
 
-    const url = existingUserId
-        ? `/api/users/${existingUserId}`
-        : "/api/users";
+    if (
+        !Number.isFinite(requestBody.radiusKm) ||
+        requestBody.radiusKm < 1 ||
+        requestBody.radiusKm > 50
+    ) {
+        showMessage("Radius must be between 1 and 50 km.", "error");
+        return;
+    }
 
-    const method = existingUserId ? "PUT" : "POST";
-
+    saving = true;
     saveButton.disabled = true;
-    saveButton.textContent = existingUserId
-        ? "Saving..."
-        : "Creating...";
-
+    saveButton.textContent = "Saving...";
     hideMessage();
 
     try {
-        const response = await fetch(url, {
-            method: method,
+        // Obtain a token for the current session.
+        const csrf = await requestJson("/api/auth/csrf");
+
+        if (
+            typeof csrf.headerName !== "string" ||
+            typeof csrf.token !== "string" ||
+            !csrf.headerName ||
+            !csrf.token
+        ) {
+            throw new Error("Could not obtain a valid security token.");
+        }
+
+        const savedUser = await requestJson("/api/users/me", {
+            method: "PUT",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                [csrf.headerName]: csrf.token
             },
             body: JSON.stringify(requestBody)
         });
 
-        if (!response.ok) {
-            throw new Error(await readError(response));
-        }
-
-        const savedUser = await response.json();
-
-        if (!savedUser.id) {
-            throw new Error("The backend did not return a user ID.");
-        }
-
-        localStorage.setItem(USER_ID_KEY, String(savedUser.id));
-
-        /*
-         * Existing recipes and shopping lists may no longer match
-         * the new budget, preferences or allergies.
-         */
-        clearGeneratedPlanData();
-
+        currentUser = savedUser;
         populateForm(savedUser);
-        showUpdateMode(savedUser.id);
+
+        // Old plans may not match the new settings.
+        clearGeneratedPlanData();
+        cacheCurrentUser(savedUser);
+
+        updateProfileStatus();
 
         showMessage(
-            "Settings saved. You can now generate recipes on the Meals page.",
+            "Settings saved. You can now generate meals on the Meals page.",
             "success"
         );
     } catch (error) {
         showMessage(error.message, "error");
     } finally {
-        saveButton.disabled = false;
-
-        saveButton.textContent =
-            localStorage.getItem(USER_ID_KEY)
-                ? "Save changes"
-                : "Create profile";
+        saving = false;
+        saveButton.disabled = !profileLoaded;
+        saveButton.textContent = "Save settings";
     }
 }
 
 function createRequestBody() {
     return {
-        numberOfPeople: Number(
-            document.getElementById("number-of-people").value
-        ),
+        numberOfPeople: Number(numberOfPeopleInput.value),
 
         weeklyBudget: Number(
             document.getElementById("weekly-budget").value
@@ -129,6 +177,9 @@ function createRequestBody() {
         maximumStores: Number(
             document.getElementById("maximum-stores").value
         ),
+
+        locationText: locationAddressInput.value.trim(),
+        radiusKm: Number(locationRadiusInput.value),
 
         preferenceCodes: getCheckedValues("preferenceCodes"),
         allergenCodes: getCheckedValues("allergenCodes")
@@ -142,81 +193,158 @@ function getCheckedValues(name) {
 }
 
 function populateForm(user) {
-    document.getElementById("number-of-people").value =
-        user.numberOfPeople;
+    // New accounts have null grocery settings.
+    numberOfPeopleInput.value = user.numberOfPeople ?? 1;
 
     document.getElementById("weekly-budget").value =
-        user.weeklyBudget;
+        user.weeklyBudget ?? "";
 
     document.getElementById("maximum-stores").value =
-        user.maximumStores;
+        user.maximumStores ?? 1;
+
+    locationAddressInput.value = user.locationText ?? "";
+    locationRadiusInput.value = user.radiusKm ?? 3;
+
+    updateHouseholdDisplay();
 
     const preferenceCodes = new Set(
-        (user.preferences || []).map(preference => preference.code)
+        (user.preferences ?? []).map(preference => preference.code)
     );
 
-    document
-        .querySelectorAll('input[name="preferenceCodes"]')
+    document.querySelectorAll('input[name="preferenceCodes"]')
         .forEach(input => {
             input.checked = preferenceCodes.has(input.value);
         });
 
     const allergenCodes = new Set(
-        (user.allergens || []).map(allergen => allergen.code)
+        (user.allergens ?? []).map(allergen => allergen.code)
     );
 
-    document
-        .querySelectorAll('input[name="allergenCodes"]')
+    document.querySelectorAll('input[name="allergenCodes"]')
         .forEach(input => {
             input.checked = allergenCodes.has(input.value);
         });
 }
 
-function showCreateMode() {
-    profileStatusElement.textContent =
-        "No profile has been created yet.";
-
-    saveButton.textContent = "Create profile";
+function updateProfileStatus() {
+    profileStatusElement.textContent = currentUser.settingsCompleted
+        ? `Signed in as ${currentUser.username}. Your settings are saved.`
+        : `Signed in as ${currentUser.username}. Complete your settings below.`;
 }
 
-function showUpdateMode(userId) {
-    profileStatusElement.textContent =
-        `Profile ${userId} is active.`;
+async function requestJson(url, options = {}) {
+    const response = await fetch(url, {
+        ...options,
+        credentials: "same-origin",
+        cache: "no-store",
+        headers: {
+            Accept: "application/json",
+            ...(options.headers ?? {})
+        }
+    });
 
-    saveButton.textContent = "Save changes";
+    // Form-login redirects can otherwise look like successful HTML responses.
+    const redirectedToLogin =
+        response.redirected &&
+        ["/login", "/login.html"].includes(
+            new URL(response.url).pathname
+        );
+
+    if (response.status === 401 || redirectedToLogin) {
+        profileLoaded = false;
+        clearUserData();
+        window.location.replace("/login.html");
+
+        throw new Error("Your session has ended. Please sign in again.");
+    }
+
+    if (!response.ok) {
+        if (response.status === 403) {
+            throw new Error(
+                "The request was denied. Reload the page and sign in again if needed."
+            );
+        }
+
+        throw new Error(await readError(response));
+    }
+
+    const contentType = response.headers.get("content-type") ?? "";
+
+    if (!contentType.includes("application/json")) {
+        throw new Error("The server returned an unexpected response.");
+    }
+
+    return response.json();
+}
+
+function cacheCurrentUser(user) {
+    try {
+        const previousUserId = localStorage.getItem(USER_ID_KEY);
+
+        if (previousUserId !== String(user.id)) {
+            clearGeneratedPlanData();
+            localStorage.removeItem(LOCATION_SETTINGS_KEY);
+        }
+
+        // Compatibility only: the server remains responsible for authorization.
+        localStorage.setItem(USER_ID_KEY, String(user.id));
+
+        localStorage.setItem(
+            LOCATION_SETTINGS_KEY,
+            JSON.stringify({
+                address: user.locationText ?? "",
+                radius: user.radiusKm ?? 3
+            })
+        );
+    } catch {
+        // Browser storage failure must not turn a successful save into an error.
+        console.warn("Could not update the local settings cache.");
+    }
 }
 
 function clearGeneratedPlanData() {
-    localStorage.removeItem("generatedMealPlan");
-    localStorage.removeItem("weeklyMealPlan");
-    localStorage.removeItem("plannedMeals");
-    localStorage.removeItem("shoppingList");
-    localStorage.removeItem("shoppingSelections");
-    localStorage.removeItem("shoppingCalculation");
+    try {
+        [
+            "generatedMealPlan",
+            "weeklyMealPlan",
+            "plannedMeals",
+            "shoppingList",
+            "shoppingSelections",
+            "shoppingCalculation"
+        ].forEach(key => localStorage.removeItem(key));
+    } catch {
+        console.warn("Could not clear the local meal-plan cache.");
+    }
 }
 
 function clearUserData() {
-    localStorage.removeItem(USER_ID_KEY);
     clearGeneratedPlanData();
+
+    try {
+        localStorage.removeItem(USER_ID_KEY);
+        localStorage.removeItem(LOCATION_SETTINGS_KEY);
+    } catch {
+        console.warn("Could not clear the local account cache.");
+    }
 }
 
 async function readError(response) {
     try {
-        const errorBody = await response.json();
+        const body = await response.json();
 
-        if (errorBody.message) {
-            return errorBody.message;
+        if (body.errors) {
+            return Object.values(body.errors).flat().join(", ");
         }
 
-        if (errorBody.errors) {
-            return Object.values(errorBody.errors).join(", ");
+        if (body.message) {
+            return body.message;
         }
 
-        if (errorBody.error) {
-            return errorBody.error;
+        if (body.detail) {
+            return body.detail;
         }
     } catch {
-        // The response did not contain JSON.
+        // Response did not contain JSON.
     }
 
     return `Request failed with status ${response.status}.`;

@@ -1,116 +1,465 @@
-.dashboard-grid {
-    display: grid;
-    grid-template-columns:
-        repeat(2, minmax(0, 1fr));
-    gap: 24px;
+/* ========================================
+   Home page layout
+======================================== */
+
+.home-page {
+    width: min(1120px, calc(100% - 40px));
+    margin: 0 auto;
+    padding-top: 64px;
+    padding-bottom: 72px;
 }
 
-.summary-card {
-    min-height: 310px;
-    padding: 30px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 20px;
+.home-page .intro {
+    max-width: 680px;
+    margin-bottom: 34px;
+}
+
+.home-page .intro h1 {
+    margin: 6px 0 12px;
+}
+
+.home-page .intro > p:last-child {
+    max-width: 590px;
+    margin: 0;
+
+    color: #765747;
+    line-height: 1.65;
+}
+
+
+/* ========================================
+   Main two-card dashboard
+======================================== */
+
+.home-dashboard {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: 22px;
+    align-items: stretch;
+}
+
+.home-dashboard-card {
+    min-width: 0;
+    min-height: 430px;
+    overflow: hidden;
+
+    background: #fffefa;
+    border: 1px solid #ded8ce;
+    border-radius: 18px;
     box-shadow:
-            0 8px 30px rgba(53, 37, 27, 0.04);
+            0 2px 4px rgba(64, 45, 32, 0.04),
+            0 10px 24px rgba(64, 45, 32, 0.05);
 }
 
-.icon-circle {
-    width: 44px;
-    height: 44px;
-    margin-bottom: 24px;
-    border-radius: 50%;
-    background: #eeeae4;
-    color: var(--green);
 
-    display: grid;
-    place-items: center;
+/* ========================================
+   Card headings
+======================================== */
+
+.home-card-heading {
+    min-height: 68px;
+    padding: 0 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+
+    border-bottom: 1px solid #e8e1d7;
 }
 
-.icon-circle svg {
-    width: 22px;
-    height: 22px;
+.home-card-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.home-card-title h2 {
+    margin: 0;
+
+    color: #17130f;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 750;
+}
+
+.home-card-icon {
+    width: 20px;
+    height: 20px;
+
     fill: none;
-    stroke: currentColor;
-    stroke-width: 1.7;
+    stroke: #159568;
+    stroke-width: 1.8;
     stroke-linecap: round;
     stroke-linejoin: round;
 }
 
-.card-label {
-    margin: 0 0 6px;
-    color: var(--muted);
-}
-
-.large-value {
-    margin-bottom: 6px;
-    font-family: Georgia, serif;
-    font-size: 3rem;
-    font-weight: bold;
-}
-
-.value-total {
-    color: var(--muted);
-    font-size: 1.35rem;
-}
-
-.card-description,
-.status-text {
-    color: var(--muted);
-    font-size: 0.92rem;
-}
-
-.progress-track {
-    height: 9px;
-    margin-top: 28px;
-    overflow: hidden;
-    background: var(--green-light);
-    border-radius: 100px;
-}
-
-.progress-value {
-    width: 0;
-    height: 100%;
-    background: var(--green);
-    border-radius: inherit;
-    transition: width 300ms ease;
-}
-
-.card-link {
-    display: inline-flex;
-    gap: 8px;
-    margin-top: 26px;
-    color: var(--green);
-    font-weight: bold;
+.small-card-link {
+    color: #267256;
+    font-size: 13px;
+    font-weight: 650;
     text-decoration: none;
 }
 
-.quick-links {
+.small-card-link:hover {
+    text-decoration: underline;
+}
+
+.small-card-link:focus-visible {
+    outline: 3px solid rgba(29, 143, 103, 0.2);
+    outline-offset: 4px;
+    border-radius: 4px;
+}
+
+
+/* ========================================
+   Shared text
+======================================== */
+
+.summary-label {
+    display: block;
+    margin-bottom: 5px;
+
+    color: #718279;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.card-empty-message {
+    width: 100%;
+    margin: 0;
+    padding: 30px 20px;
+
+    color: #7d7169;
+    line-height: 1.6;
+    text-align: center;
+}
+
+
+/* ========================================
+   Nearby stores card
+======================================== */
+
+.location-summary {
+    padding: 18px 22px;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 24px;
+    align-items: center;
+
+    background: #f5faf7;
+    border-bottom: 1px solid #e3ebe6;
+}
+
+.location-summary strong {
+    display: block;
+
+    color: #193a2e;
+    font-size: 14px;
+}
+
+.location-summary > div:last-child {
+    text-align: right;
+}
+
+.nearby-stores-list {
+    padding: 4px 22px 14px;
+}
+
+
+/*
+These store rows will be created later by index.js.
+*/
+
+.nearby-store-item {
+    min-height: 72px;
+    padding: 14px 2px;
+
+    display: grid;
+    grid-template-columns: 14px minmax(0, 1fr) auto;
+    gap: 13px;
+    align-items: center;
+}
+
+.nearby-store-item + .nearby-store-item {
+    border-top: 1px solid #ebe5dc;
+}
+
+.store-marker {
+    width: 11px;
+    height: 11px;
+
+    background: #2aa878;
+    border: 3px solid #dff4ea;
+    border-radius: 50%;
+}
+
+.nearby-store-information {
+    min-width: 0;
+}
+
+.nearby-store-information h3 {
+    margin: 0 0 5px;
+
+    overflow: hidden;
+
+    color: #18130f;
+    font-size: 14px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.nearby-store-information p {
+    margin: 0;
+
+    overflow: hidden;
+
+    color: #826956;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.nearby-store-distance {
+    color: #178b63;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+
+/* ========================================
+   Weekly budget summary
+======================================== */
+
+.budget-overview {
+    padding: 18px 22px;
+
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+
+    background: #f8faf8;
+    border-bottom: 1px solid #e5e8e5;
+}
+
+.budget-overview > div {
+    min-width: 0;
+    padding-right: 12px;
+}
+
+.budget-overview > div + div {
+    padding-left: 14px;
+    border-left: 1px solid #dfe5e1;
+}
+
+.budget-overview strong {
+    display: block;
+
+    overflow: hidden;
+
+    color: #184d39;
+    font-size: 16px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* ========================================
+   Budget categories
+======================================== */
+
+.budget-category-list {
+    padding: 16px 22px 24px;
+}
+
+
+/*
+These category rows will be created later by index.js.
+*/
+
+.budget-category-item {
+    padding: 11px 0;
+}
+
+.budget-category-item + .budget-category-item {
+    border-top: 1px solid #f0ece6;
+}
+
+.budget-category-header {
+    margin-bottom: 9px;
+
     display: flex;
-    gap: 14px;
-    margin-top: 28px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.budget-category-name {
+    min-width: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    color: #17130f;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.budget-category-symbol {
+    width: 24px;
+    flex: 0 0 24px;
+
+    font-size: 16px;
+    text-align: center;
+}
+
+.budget-category-amount {
+    color: #59776b;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.category-progress-track {
+    width: 100%;
+    height: 8px;
+    overflow: hidden;
+
+    background: #efede9;
+    border-radius: 999px;
+}
+
+.category-progress-value {
+    width: 0;
+    height: 100%;
+
+    background: #269d70;
+    border-radius: inherit;
+
+    transition: width 0.35s ease;
+}
+
+
+/* ========================================
+   Quick links
+======================================== */
+
+.quick-links {
+    margin-top: 22px;
+
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .quick-links a {
-    padding: 13px 18px;
-    background: var(--green);
-    color: white;
-    border-radius: 10px;
+    min-height: 42px;
+    padding: 0 17px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #fffefa;
+    border: 1px solid #d8d1c6;
+    border-radius: 11px;
+
+    color: #245e48;
+    font-size: 14px;
+    font-weight: 700;
     text-decoration: none;
+
+    transition:
+            background-color 0.2s ease,
+            border-color 0.2s ease,
+            transform 0.2s ease;
 }
 
-.quick-links a:last-child {
-    background: transparent;
-    color: var(--green);
-    border: 1px solid var(--green);
+.quick-links a:hover {
+    background: #f2faf6;
+    border-color: #58a889;
+    transform: translateY(-1px);
 }
 
-@media (max-width: 700px) {
-    .dashboard-grid {
+.quick-links a:focus-visible {
+    outline: 3px solid rgba(29, 143, 103, 0.2);
+    outline-offset: 3px;
+}
+
+
+/* ========================================
+   Tablet
+======================================== */
+
+@media (max-width: 900px) {
+    .home-dashboard {
         grid-template-columns: 1fr;
     }
 
-    .quick-links {
+    .home-dashboard-card {
+        min-height: auto;
+    }
+}
+
+
+/* ========================================
+   Mobile
+======================================== */
+
+@media (max-width: 620px) {
+    .home-page {
+        width: min(100% - 24px, 1120px);
+        padding-top: 38px;
+    }
+
+    .home-card-heading {
+        min-height: auto;
+        padding: 17px;
+
+        align-items: flex-start;
         flex-direction: column;
+        gap: 8px;
+    }
+
+    .location-summary {
+        padding: 16px 17px;
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .location-summary > div:last-child {
+        text-align: left;
+    }
+
+    .nearby-stores-list,
+    .budget-category-list {
+        padding-inline: 17px;
+    }
+
+    .budget-overview {
+        padding: 16px 17px;
+        grid-template-columns: 1fr;
+    }
+
+    .budget-overview > div {
+        padding: 0;
+    }
+
+    .budget-overview > div + div {
+        padding: 12px 0 0;
+        border-top: 1px solid #dfe5e1;
+        border-left: 0;
+    }
+
+    .quick-links {
+        justify-content: stretch;
+    }
+
+    .quick-links a {
+        flex: 1 1 100%;
     }
 }

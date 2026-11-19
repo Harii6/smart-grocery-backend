@@ -1,0 +1,10 @@
+{
+  "choices": [
+    {
+      "finish_reason": "length",
+      "message": {
+        "content": "{\"recipes\":["
+      }
+    }
+  ]
+}

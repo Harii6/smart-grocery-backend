@@ -34,6 +34,33 @@ public class AppUserDaoImpl implements AppUserRepository {
         return Optional.ofNullable(user);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<AppUser> findByUsername(String username) {
+        return entityManager.createQuery(
+                        "SELECT u FROM AppUser u WHERE u.username = :username",
+                        AppUser.class
+                )
+                .setParameter("username", username)
+                .getResultList()
+                .stream()
+                .findFirst();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsByUsername(String username) {
+        Long count = entityManager.createQuery(
+                        "SELECT COUNT(u) FROM AppUser u " +
+                                "WHERE u.username = :username",
+                        Long.class
+                )
+                .setParameter("username", username)
+                .getSingleResult();
+
+        return count > 0;
+    }
+
 
     @Override
     @Transactional

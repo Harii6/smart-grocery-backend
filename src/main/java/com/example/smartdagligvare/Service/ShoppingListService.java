@@ -9,6 +9,8 @@ import com.example.smartdagligvare.Dto.ShoppingList.ShoppingListCalculationRespo
 import com.example.smartdagligvare.Dto.ShoppingList.ShoppingListItem;
 import com.example.smartdagligvare.Dto.ShoppingList.ShoppingListResponse;
 import com.example.smartdagligvare.Model.AppUser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -22,10 +24,12 @@ import java.util.List;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import java.util.UUID;
 
 @Service
 public class ShoppingListService {
+
+    private static final Logger log = LoggerFactory.getLogger(ShoppingListService.class);
 
     private static final Pattern PACKAGE_MEASUREMENT_PATTERN =
             Pattern.compile(
@@ -41,24 +45,28 @@ public class ShoppingListService {
 
     private final UserService userService;
     private final ProductRecommendationService recommendationService;
-
+    private final ShoppingPlanSnapshotService snapshotService;
     public ShoppingListService(
             UserService userService,
-            ProductRecommendationService recommendationService
+            ProductRecommendationService recommendationService, ShoppingPlanSnapshotService snapshotService
     ) {
         this.userService = userService;
         this.recommendationService = recommendationService;
+        this.snapshotService = snapshotService;
     }
 
     public ShoppingListResponse createShoppingList(
             Long userId,
             List<RecipeIngredient> ingredients
     ) {
+        long totalStarted = System.nanoTime();
         AppUser user = userService.findById(userId);
 
         List<ShoppingListItem> items = new ArrayList<>();
         List<String> missingIngredients = new ArrayList<>();
+        boolean quantitiesComparable = true;
 
+        long searchesStarted = System.nanoTime();
         for (RecipeIngredient ingredient : ingredients) {
             List<KassalappProduct> products =
                     recommendationService.findProductsForUser(
@@ -72,6 +80,27 @@ public class ShoppingListService {
                 );
                 continue;
             }
+
+            boolean ingredientQuantitiesComparable = true;
+
+            for (KassalappProduct product : products.stream().limit(5).toList()) {
+                if (!hasComparableQuantity(ingredient, product)) {
+                    ingredientQuantitiesComparable = false;
+                    log.warn(
+                            "Cannot compare quantity: ingredient={} amount={} unit={} product={} weight={} weightUnit={}",
+                            ingredient.searchTerm(),
+                            ingredient.amount(),
+                            ingredient.unit(),
+                            product.name(),
+                            product.weight(),
+                            product.weightUnit()
+                    );
+                }
+            }
+
+            quantitiesComparable =
+                    quantitiesComparable
+                            && ingredientQuantitiesComparable;
 
             List<ProductOption> options = products.stream()
                     .limit(5)
@@ -115,12 +144,15 @@ public class ShoppingListService {
             items.add(
                     new ShoppingListItem(
                             ingredient.searchTerm(),
+                            ingredient.category(),
                             ingredient.amount(),
                             ingredient.unit(),
                             options
                     )
             );
         }
+        log.info("shopping_list product_lookups_ms={} ingredient_count={} matched_count={} user_id={}",
+                elapsedMs(searchesStarted), ingredients.size(), items.size(), userId);
         StoreRecommendation recommendation;
 
         if (missingIngredients.isEmpty()) {
@@ -137,13 +169,53 @@ public class ShoppingListService {
             );
         }
 
+        ShoppingListResponse shoppingList =
+                new ShoppingListResponse(
+                        userId,
+                        user.getWeeklyBudget(),
+                        items,
+                        missingIngredients,
+                        recommendation
+                );
+
+// Do not save a snapshot if no products were found.
+        if (items.isEmpty()) {
+            log.info("shopping_list total_ms={} snapshot_ms=0 user_id={}",
+                    elapsedMs(totalStarted), userId);
+            return shoppingList;
+        }
+
+        StoreRecommendation singleStoreRecommendation =
+                recommendStoreCombination(
+                        items,
+                        1
+                );
+
+        long snapshotStarted = System.nanoTime();
+        UUID snapshotId;
+        try {
+            snapshotId = snapshotService.saveGeneratedList(
+                    shoppingList,
+                    singleStoreRecommendation,
+                    quantitiesComparable
+            );
+        } finally {
+            log.info("shopping_list snapshot_ms={} total_ms={} user_id={}",
+                    elapsedMs(snapshotStarted), elapsedMs(totalStarted), userId);
+        }
+
         return new ShoppingListResponse(
-                userId,
-                user.getWeeklyBudget(),
-                items,
-                missingIngredients,
-                recommendation
+                shoppingList.userId(),
+                shoppingList.weeklyBudget(),
+                shoppingList.items(),
+                shoppingList.missingIngredients(),
+                shoppingList.recommendation(),
+                snapshotId
         );
+    }
+
+    private static double elapsedMs(long started) {
+        return (System.nanoTime() - started) / 1_000_000.0;
     }
 
     private StoreRecommendation recommendStoreCombination(
@@ -222,6 +294,7 @@ public class ShoppingListService {
                 selections.add(
                         new SelectedProduct(
                                 item.ingredient(),
+                                item.category(),
                                 cheapestOption.productId(),
                                 cheapestOption.productName(),
                                 cheapestOption.price(),
@@ -682,5 +755,69 @@ public class ShoppingListService {
             BigDecimal size,
             String unit
     ) {
+    }
+
+
+    private boolean hasComparableQuantity(
+            RecipeIngredient ingredient,
+            KassalappProduct product
+    ) {
+        double requiredAmount = ingredient.amount();
+
+        if (!Double.isFinite(requiredAmount)
+                || requiredAmount <= 0) {
+            return false;
+        }
+
+        if (product.currentPrice() == null
+                || product.currentPrice().signum() < 0) {
+            return false;
+        }
+
+        /*
+         * For savings comparisons, require structured package data.
+         * Do not rely on guessing a package size from its name.
+         */
+        if (product.weight() == null
+                || product.weight().signum() <= 0
+                || product.weightUnit() == null
+                || product.weightUnit().isBlank()) {
+            return false;
+        }
+
+        BaseAmount required = convertToBaseUnit(
+                requiredAmount,
+                normalizeUnit(ingredient.unit())
+        );
+
+        BaseAmount productPackage = convertToBaseUnit(
+                product.weight().doubleValue(),
+                normalizeUnit(product.weightUnit())
+        );
+
+        if (required == null || productPackage == null) {
+            return false;
+        }
+
+        if (!required.category().equals(
+                productPackage.category()
+        )) {
+            return false;
+        }
+
+        if (!Double.isFinite(required.amount())
+                || !Double.isFinite(productPackage.amount())
+                || required.amount() <= 0
+                || productPackage.amount() <= 0) {
+            return false;
+        }
+
+        double packages = Math.ceil(
+                required.amount() / productPackage.amount()
+        );
+
+        return Double.isFinite(packages)
+                && packages >= 1
+                && packages <= Integer.MAX_VALUE;
     }
 }

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 public record SelectedProduct(
         String ingredient,
+        String category,
         Long productId,
         String productName,
         BigDecimal price,

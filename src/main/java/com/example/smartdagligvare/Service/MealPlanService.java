@@ -7,6 +7,8 @@ import com.example.smartdagligvare.Dto.Recipe.Recipe;
 import com.example.smartdagligvare.Dto.Recipe.RecipeIngredient;
 import com.example.smartdagligvare.Dto.ShoppingList.ShoppingListResponse;
 import com.example.smartdagligvare.Model.AppUser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,24 +20,31 @@ import java.util.Map;
 @Service
 public class MealPlanService {
 
+    private static final Logger log = LoggerFactory.getLogger(MealPlanService.class);
+
     private final RecipeClient recipeClient;
     private final UserService userService;
     private final ShoppingListService shoppingListService;
+    private final IngredientMergeService ingredientMergeService;
 
     public MealPlanService(
             RecipeClient recipeClient,
             UserService userService,
-            ShoppingListService shoppingListService
+            ShoppingListService shoppingListService, IngredientMergeService ingredientMergeService
     ) {
         this.recipeClient = recipeClient;
         this.userService = userService;
         this.shoppingListService = shoppingListService;
+        this.ingredientMergeService = ingredientMergeService;
     }
 
     public GeneratedMealPlansResponse generateMealPlan(
             Long userId
     ) {
+        long totalStarted = System.nanoTime();
+        long stageStarted = System.nanoTime();
         AppUser user = userService.findById(userId);
+        log.info("meal_plan user_lookup_ms={} user_id={}", elapsedMs(stageStarted), userId);
 
         List<String> preferenceCodes = user.getPreferences()
                 .stream()
@@ -47,12 +56,17 @@ public class MealPlanService {
                 .map(allergen -> allergen.getCode())
                 .toList();
 
-        MealPlanResponse generatedRecipes =
-                recipeClient.generateRecipes(
-                        user.getNumberOfPeople(),
-                        preferenceCodes,
-                        allergenCodes
-                );
+        stageStarted = System.nanoTime();
+        MealPlanResponse generatedRecipes;
+        try {
+            generatedRecipes = recipeClient.generateRecipes(
+                    user.getNumberOfPeople(),
+                    preferenceCodes,
+                    allergenCodes
+            );
+        } finally {
+            log.info("meal_plan ai_ms={} user_id={}", elapsedMs(stageStarted), userId);
+        }
 
         if (generatedRecipes == null ||
                 generatedRecipes.recipes() == null ||
@@ -65,14 +79,20 @@ public class MealPlanService {
         List<Recipe> recipes =
                 generatedRecipes.recipes();
 
+        stageStarted = System.nanoTime();
         List<RecipeIngredient> combinedIngredients =
-                mergeIngredients(recipes);
+                ingredientMergeService.merge(recipes);
+        log.info("meal_plan merge_ms={} ingredient_count={} user_id={}",
+                elapsedMs(stageStarted), combinedIngredients.size(), userId);
 
+        stageStarted = System.nanoTime();
         ShoppingListResponse shoppingList =
                 shoppingListService.createShoppingList(
                         userId,
                         combinedIngredients
                 );
+        log.info("meal_plan shopping_ms={} total_ms={} user_id={}",
+                elapsedMs(stageStarted), elapsedMs(totalStarted), userId);
 
         return new GeneratedMealPlansResponse(
                 user.getId(),
@@ -80,6 +100,10 @@ public class MealPlanService {
                 recipes,
                 shoppingList
         );
+    }
+
+    private static double elapsedMs(long started) {
+        return (System.nanoTime() - started) / 1_000_000.0;
     }
 
     private List<RecipeIngredient> mergeIngredients(
@@ -124,7 +148,8 @@ public class MealPlanService {
                             new RecipeIngredient(
                                     searchTerm,
                                     ingredient.amount(),
-                                    unit
+                                    unit,
+                                    ingredient.category()
                             )
                     );
                 } else {
@@ -134,7 +159,8 @@ public class MealPlanService {
                                     existingIngredient.searchTerm(),
                                     existingIngredient.amount()
                                             + ingredient.amount(),
-                                    existingIngredient.unit()
+                                    existingIngredient.unit(),
+                                    existingIngredient.category()
                             )
                     );
                 }

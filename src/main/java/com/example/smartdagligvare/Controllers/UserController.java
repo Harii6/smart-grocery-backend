@@ -1,13 +1,16 @@
 package com.example.smartdagligvare.Controllers;
 
+import com.example.smartdagligvare.DAO.AppUserRepository;
 import com.example.smartdagligvare.Dto.UserRequest;
 import com.example.smartdagligvare.Model.AppUser;
 import com.example.smartdagligvare.Service.UserService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -15,57 +18,119 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final AppUserRepository appUserRepository;
 
-    public UserController(UserService userService) {
+    public UserController(
+            UserService userService,
+            AppUserRepository appUserRepository
+    ) {
         this.userService = userService;
+        this.appUserRepository = appUserRepository;
     }
 
-    // GET /api/users
-    @GetMapping
-    public List<AppUser> findAll() {
-        return userService.findAll();
+    @GetMapping("/me")
+    public SettingsResponse getMySettings(Principal principal) {
+        Long userId = getCurrentUserId(principal);
+
+        return toResponse(userService.findById(userId));
     }
 
-    // GET /api/users/1
+    @PutMapping("/me")
+    public SettingsResponse updateMySettings(
+            Principal principal,
+            @Valid @RequestBody UserRequest request
+    ) {
+        Long userId = getCurrentUserId(principal);
+
+        AppUser updatedUser = userService.update(userId, request);
+
+        return toResponse(updatedUser);
+    }
+
+    /*
+     * Compatibility with existing Home and Shopping pages.
+     * A logged-in user may only read their own account.
+     */
     @GetMapping("/{id}")
-    public AppUser findById(@PathVariable Long id) {
-        return userService.findById(id);
-    }
-
-    // POST /api/users
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<AppUser> save(
-            @Valid @RequestBody UserRequest request
-    ) {
-        AppUser savedUser = userService.save(request);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(savedUser);
-
-
-    }
-
-    // PUT /api/users/1
-    @PutMapping("/{id}")
-    public AppUser update(
+    public SettingsResponse findById(
             @PathVariable Long id,
-            @Valid @RequestBody UserRequest request
+            Principal principal
     ) {
+        Long currentUserId = getCurrentUserId(principal);
 
-        return userService.update(id, request);
+        if (!currentUserId.equals(id)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "You cannot access another user's settings."
+            );
+        }
+
+        return toResponse(userService.findById(currentUserId));
     }
 
-    // DELETE /api/users/1
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(
-            @PathVariable Long id
-    ) {
-        userService.deleteById(id);
+    private Long getCurrentUserId(Principal principal) {
+        if (principal == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Please sign in."
+            );
+        }
 
-        return ResponseEntity.noContent().build();
+        return appUserRepository
+                .findByUsername(principal.getName())
+                .map(AppUser::getId)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.UNAUTHORIZED,
+                                "Your account is no longer available."
+                        )
+                );
     }
 
+    private SettingsResponse toResponse(AppUser user) {
+        return new SettingsResponse(
+                user.getId(),
+                user.getUsername(),
+                user.isSettingsCompleted(),
+                user.getNumberOfPeople(),
+                user.getWeeklyBudget(),
+                user.getMaximumStores(),
+                user.getLocationText(),
+                user.getRadiusKm(),
 
+                user.getPreferences().stream()
+                        .map(preference -> new OptionResponse(
+                                preference.getCode(),
+                                preference.getDisplayName()
+                        ))
+                        .toList(),
+
+                user.getAllergens().stream()
+                        .map(allergen -> new OptionResponse(
+                                allergen.getCode(),
+                                allergen.getDisplayName()
+                        ))
+                        .toList()
+        );
+    }
+
+    public record SettingsResponse(
+            Long id,
+            String username,
+            boolean settingsCompleted,
+            Integer numberOfPeople,
+            BigDecimal weeklyBudget,
+            Integer maximumStores,
+            String locationText,
+            Double radiusKm,
+            List<OptionResponse> preferences,
+            List<OptionResponse> allergens
+    ) {
+    }
+
+    public record OptionResponse(
+            String code,
+            String displayName
+    ) {
+    }
 }

@@ -1,8 +1,15 @@
 CREATE TABLE app_user (
                           id BIGSERIAL PRIMARY KEY,
-                          number_of_people INTEGER NOT NULL,
-                          weekly_budget NUMERIC(10, 2) NOT NULL,
-                          maximum_stores INTEGER NOT NULL
+                          username VARCHAR(50),
+                          password_hash VARCHAR(255),
+                          settings_completed BOOLEAN NOT NULL DEFAULT FALSE,
+                          number_of_people INTEGER,
+                          weekly_budget NUMERIC(10, 2),
+                          maximum_stores INTEGER ,
+                          location_text VARCHAR(150),
+                          latitude DOUBLE PRECISION,
+                          longitude DOUBLE PRECISION,
+                          radius_km DOUBLE PRECISION
 );
 
 CREATE TABLE preference (
@@ -51,12 +58,61 @@ CREATE TABLE user_allergen (
                                        ON DELETE CASCADE
 );
 
+CREATE TABLE shopping_plan_snapshot (
+                                        id UUID PRIMARY KEY,
+
+                                        user_id BIGINT NOT NULL
+                                            REFERENCES app_user(id)
+                                                ON DELETE CASCADE,
+
+                                        created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                        confirmed_at TIMESTAMPTZ,
+
+                                        currency VARCHAR(3) NOT NULL DEFAULT 'NOK'
+                                            CHECK (currency = 'NOK'),
+
+                                        comparison_method VARCHAR(50) NOT NULL
+                                                                        DEFAULT 'BEST_SINGLE_STORE_V1',
+
+                                        baseline_total NUMERIC(12, 2),
+                                        recommended_total NUMERIC(12, 2),
+
+                                        comparison_note TEXT,
+
+                                        snapshot_json TEXT NOT NULL,
+
+                                        CONSTRAINT valid_comparison_totals CHECK (
+                                            (
+                                                baseline_total IS NULL
+                                                    AND recommended_total IS NULL
+                                                )
+                                                OR
+                                            (
+                                                baseline_total IS NOT NULL
+                                                    AND recommended_total IS NOT NULL
+                                                    AND baseline_total >= 0
+                                                    AND recommended_total >= 0
+                                                    AND recommended_total <= baseline_total
+                                                )
+                                            ),
+
+                                        CONSTRAINT valid_confirmation_date CHECK (
+                                            confirmed_at IS NULL
+                                                OR confirmed_at >= created_at
+                                            )
+);
+
+CREATE INDEX idx_shopping_snapshot_user_confirmed
+    ON shopping_plan_snapshot(user_id, confirmed_at);
+
 INSERT INTO preference (code, display_name)
 VALUES
     ('vegetarian', 'Vegetarian'),
     ('vegan', 'Vegan'),
     ('halal', 'Halal'),
-    ('low_sugar', 'Low sugar');
+    ('low_sugar', 'Low sugar'),
+    ('kosher', 'Kosher');
+
 
 INSERT INTO allergen (code, display_name)
 VALUES
